@@ -11,7 +11,7 @@ RESPONSE_ENCODING: str = "utf-8"
 
 dotenv.load_dotenv()
 
-def get_nutrition_facts(query: str) -> list[FoodItem] | tuple[int, str]:
+def get_nutrition_facts(query: str) -> FoodItem | tuple[int, str]:
     api_key: str = os.environ["CALORIE_NINJAS_API_KEY"]
     url: str = "https://api.calorieninjas.com/v1/nutrition"
     params: dict[str, str] = {
@@ -27,7 +27,7 @@ def get_nutrition_facts(query: str) -> list[FoodItem] | tuple[int, str]:
         except Exception as e:
             return response.status_code, f"Failed to convert response to JSON: {str(e)}"
         try:
-            return [FoodItemConverter.to_entity(food_item) for food_item in content["items"]]
+            return FoodItemConverter.to_entity(content["items"][0])
         except KeyError as e:
             raise Exception(f"Error: Failed to convert food item from API response: {str(e)}")
     else:
