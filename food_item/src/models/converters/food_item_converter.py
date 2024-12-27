@@ -5,7 +5,7 @@ class FoodItemConverter():
     @staticmethod
     def to_entity(content: dict[str, Any]) -> FoodItem:
         food_item: FoodItem = FoodItem(
-            name=content["name"],
+            name=content["name"].lower(),
             calories=content["calories"],
             serving_size=content["serving_size_g"],
             fat_total=content["fat_total_g"],

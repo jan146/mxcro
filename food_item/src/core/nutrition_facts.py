@@ -11,7 +11,14 @@ RESPONSE_ENCODING: str = "utf-8"
 
 dotenv.load_dotenv()
 
+def check_existing_records(query: str) -> FoodItem | None:
+    result: list[FoodItem] | None = FoodItem.objects(name=query.lower())
+    return result[0] if result else None
+
 def get_nutrition_facts(query: str) -> FoodItem | tuple[int, str]:
+    cached_record: FoodItem | None = check_existing_records(query)
+    if cached_record:
+        return cached_record
     api_key: str = os.environ["CALORIE_NINJAS_API_KEY"]
     url: str = "https://api.calorieninjas.com/v1/nutrition"
     params: dict[str, str] = {
