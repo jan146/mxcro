@@ -1,3 +1,5 @@
 requests
 flask
 gevent
+mongoengine
+python-dotenv
