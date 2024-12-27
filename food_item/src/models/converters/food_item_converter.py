@@ -7,7 +7,7 @@ class FoodItemConverter():
         food_item: FoodItem = FoodItem(
             name=content["name"].lower(),
             calories=content["calories"],
-            serving_size=content["serving_size_g"],
+            weight_g=content["serving_size_g"],
             fat_total=content["fat_total_g"],
             fat_saturated=content["fat_saturated_g"],
             protein=content["protein_g"],
