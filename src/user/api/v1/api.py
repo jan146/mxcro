@@ -1,6 +1,8 @@
 import requests
 import os
 from flask import Flask, jsonify
+from gevent.pywsgi import WSGIServer
+
 app: Flask = Flask(__name__)
 
 @app.route("/", methods=["GET"])
@@ -12,5 +14,9 @@ if __name__ == "__main__":
     debug: bool = (os.environ.get("FLASK_DEBUG", "True").lower() != "false")
     host: str = os.environ.get("FLASK_HOST", "0.0.0.0")
     port: int = int(os.environ.get("FLASK_PORT", 5000))
-    app.run(debug=debug, host=host, port=port)
+    if environment in ["prod", "production"]:
+        http_server = WSGIServer((host, port), app)
+        http_server.serve_forever()
+    else:
+        app.run(debug=debug, host=host, port=port)
 
