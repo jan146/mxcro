@@ -1,0 +1,15 @@
+import requests
+import os
+from flask import Flask, jsonify
+app: Flask = Flask(__name__)
+debug: bool = (os.environ.get("FLASK_DEBUG", "True").lower() != "false")
+print(debug)
+host: str = os.environ.get("FLASK_HOST", "0.0.0.0")
+port: int = int(os.environ.get("FLASK_PORT", 5000))
+
+@app.route("/")
+def home():
+    return "Hello, this is a Flask Microservice"
+
+if __name__ == "__main__":
+    app.run(debug=debug, host=host, port=port)
