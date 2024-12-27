@@ -19,4 +19,20 @@ class FoodItemConverter():
             cholesterol=content["cholesterol_mg"],
         )
         return food_item
+    @staticmethod
+    def to_dict(entity: FoodItem) -> dict[str, Any]:
+        return {
+            "name": entity.name,
+            "calories": entity.calories,
+            "serving_size": entity.serving_size,
+            "fat_total": entity.fat_total,
+            "fat_saturated": entity.fat_saturated,
+            "protein": entity.protein,
+            "carbohydrates": entity.carbohydrates,
+            "fiber": entity.fiber,
+            "sugar": entity.sugar,
+            "sodium": entity.sodium,
+            "potassium": entity.potassium,
+            "cholesterol": entity.cholesterol,
+        }
 
