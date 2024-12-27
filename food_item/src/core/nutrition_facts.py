@@ -33,6 +33,8 @@ def get_nutrition_facts(query: str) -> FoodItem | tuple[int, str]:
             content: dict[str, Any] = json.loads(response.content.decode(RESPONSE_ENCODING))
         except Exception as e:
             return response.status_code, f"Failed to convert response to JSON: {str(e)}"
+        if len(content["items"]) < 1:
+            return 204, response.text
         try:
             return FoodItemConverter.to_entity(content["items"][0])
         except KeyError as e:
