@@ -24,7 +24,7 @@ class FoodItemConverter():
         return {
             "name": entity.name,
             "calories": entity.calories,
-            "serving_size": entity.serving_size,
+            "weight_g": entity.weight_g,
             "fat_total": entity.fat_total,
             "fat_saturated": entity.fat_saturated,
             "protein": entity.protein,
