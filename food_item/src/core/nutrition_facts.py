@@ -37,7 +37,8 @@ def get_nutrition_facts(query: str) -> FoodItem | tuple[int, str]:
             return 204, response.text
         try:
             food_item: FoodItem = FoodItemConverter.to_entity(content["items"][0])
-            food_item.save()
+            if not check_existing_records(food_item.name):
+                food_item.save()
             return food_item
         except KeyError as e:
             raise Exception(f"Error: Failed to convert food item from API response: {str(e)}")
