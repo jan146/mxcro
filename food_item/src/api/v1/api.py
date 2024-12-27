@@ -4,6 +4,9 @@ from flask import Flask, jsonify
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect
 from dotenv import load_dotenv
+from food_item.src.core.nutrition_facts import get_nutrition_facts
+from food_item.src.models.converters.food_item_converter import FoodItemConverter
+from food_item.src.models.entities.food_item import FoodItem
 
 load_dotenv()
 connect(
@@ -18,6 +21,13 @@ app: Flask = Flask(__name__)
 @app.route("/", methods=["GET"])
 def home():
     return "Hello, this is the root endpoint of food_item"
+
+@app.route("/food_item/<query>", methods=["GET"])
+def food_item(query: str):
+    result: FoodItem | tuple[int, str] = get_nutrition_facts(query)
+    if isinstance(result, FoodItem):
+        return jsonify({"food_item": FoodItemConverter.to_dict(result)}), 200
+    return jsonify({"error": result[1]}), result[0]
 
 if __name__ == "__main__":
     environment: str = os.environ.get("ENVIRONMENT", "development").lower()
