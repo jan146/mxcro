@@ -2,7 +2,17 @@ import requests
 import os
 from flask import Flask, jsonify
 from gevent.pywsgi import WSGIServer
+from mongoengine import connect
+from dotenv import load_dotenv
 
+load_dotenv()
+connect(
+    db=os.environ["MONGO_DB_NAME"],
+    host=os.environ["MONGO_HOST"],
+    port=int(os.environ["MONGO_PORT"]),
+    username=os.environ["MONGO_USERNAME"],
+    password=os.environ["MONGO_PASSWORD"],
+)
 app: Flask = Flask(__name__)
 
 @app.route("/", methods=["GET"])
