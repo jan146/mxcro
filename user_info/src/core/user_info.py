@@ -11,3 +11,13 @@ def get_user_info(id: str) -> UserInfo | None:
     else:
         return None
 
+def create_user(data: dict[str, str]) -> UserInfo:
+    user: UserInfo = UserInfo(
+        username=data["username"],
+        age=data["age"],
+        height=data["height"],
+        weight=data["weight"],
+    )
+    user.save()
+    return user
+
