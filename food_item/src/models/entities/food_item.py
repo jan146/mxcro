@@ -1,7 +1,7 @@
 import mongoengine as me
 
 class FoodItem(me.Document):
-    name: str = me.StringField()
+    name: str = me.StringField(required=True, unique=True)
     calories: float = me.FloatField()
     weight_g: float = me.FloatField()
     fat_total: float = me.FloatField()
