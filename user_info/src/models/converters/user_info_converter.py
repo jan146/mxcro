@@ -8,7 +8,7 @@ class UserInfoConverter():
     @staticmethod
     def to_dict(entity: UserInfo) -> dict[str, Any]:
         return {
-            "id": entity.pk,
+            "id": str(entity.pk),
             "username": entity.username,
             "age": entity.age,
             "height": entity.height,
