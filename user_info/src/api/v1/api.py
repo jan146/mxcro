@@ -1,6 +1,7 @@
 import requests
 import os
 from flask import Flask, jsonify
+from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect
 from dotenv import load_dotenv
@@ -17,6 +18,7 @@ connect(
     password=os.environ["MONGO_PASSWORD"],
 )
 app: Flask = Flask(__name__)
+CORS(app)
 
 @app.route("/", methods=["GET"])
 def home():

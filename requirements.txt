@@ -3,3 +3,4 @@ flask
 gevent
 mongoengine
 python-dotenv
+flask-cors
