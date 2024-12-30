@@ -37,4 +37,4 @@ if __name__ == "__main__":
         http_server.serve_forever()
     else:
         app.run(debug=debug, host=host, port=port)
-    app.run(host='0.0.0.0', port=5000)
+
