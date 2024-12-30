@@ -8,7 +8,7 @@ class FoodItemConverter():
     def to_entity(content: dict[str, Any], normalized_weight: bool = True) -> FoodItem:
         weight_g: float = content["serving_size_g"]
         normalization_multiplier: float = WEIGHT_DEFAULT / weight_g if normalized_weight else 1.0
-        food_item: FoodItem = FoodItem(
+        food_item_entity: FoodItem = FoodItem(
             name=content["name"].lower(),
             calories=(content["calories"] * normalization_multiplier),
             weight_g=WEIGHT_DEFAULT if normalized_weight else weight_g,
@@ -22,7 +22,7 @@ class FoodItemConverter():
             potassium=(content["potassium_mg"] * normalization_multiplier),
             cholesterol=(content["cholesterol_mg"] * normalization_multiplier),
         )
-        return food_item
+        return food_item_entity
     @staticmethod
     def to_dict(entity: FoodItem) -> dict[str, Any]:
         return {
