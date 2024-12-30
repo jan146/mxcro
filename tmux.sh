@@ -14,6 +14,10 @@ tmux send-keys -t "$SESSION_NAME" ". venv/bin/activate" C-m
 # Run database in bottom-right pane
 tmux split-window -h
 tmux send-keys -t "$SESSION_NAME" "podman-compose -f compose.yaml up" C-m
+# Let's also run combined API here
+tmux split-window -v -l "50%"
+tmux send-keys -t "$SESSION_NAME" ". venv/bin/activate && python api.py" C-m
+
 # Run API for all three microservices right of code editor
 # tmux select-pane -t "${SESSION_NAME}.0"
 # tmux split-window -h -l "25%"
