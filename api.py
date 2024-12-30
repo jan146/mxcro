@@ -13,19 +13,34 @@ CORS(app)
 for rule in app_food_item.url_map.iter_rules():
     if rule.endpoint in ["home", "static"]:
         continue
-    app.add_url_rule(f"{rule}", endpoint=rule.endpoint, view_func=app_food_item.view_functions[rule.endpoint])
+    app.add_url_rule(
+        f"{rule}",
+        endpoint=rule.endpoint,
+        view_func=app_food_item.view_functions[rule.endpoint],
+        methods=rule.methods,
+    )
 
 # Register routes from app_user_info
 for rule in app_user_info.url_map.iter_rules():
     if rule.endpoint in ["home", "static"]:
         continue
-    app.add_url_rule(f"{rule}", endpoint=rule.endpoint, view_func=app_user_info.view_functions[rule.endpoint])
+    app.add_url_rule(
+        f"{rule}",
+        endpoint=rule.endpoint,
+        view_func=app_user_info.view_functions[rule.endpoint],
+        methods=rule.methods,
+    )
 
 # Register routes from app_logged_item
 for rule in app_logged_item.url_map.iter_rules():
     if rule.endpoint in ["home", "static"]:
         continue
-    app.add_url_rule(f"{rule}", endpoint=rule.endpoint, view_func=app_logged_item.view_functions[rule.endpoint])
+    app.add_url_rule(
+        f"{rule}",
+        endpoint=rule.endpoint,
+        view_func=app_logged_item.view_functions[rule.endpoint],
+        methods=rule.methods,
+    )
 
 if __name__ == "__main__":
     environment: str = os.environ.get("ENVIRONMENT", "development").lower()
