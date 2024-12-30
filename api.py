@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 import os
 from food_item.src.api.v1.api import app as app_food_item
@@ -6,6 +7,7 @@ from user_info.src.api.v1.api import app as app_user_info
 from logged_item.src.api.v1.api import app as app_logged_item
 
 app: Flask = Flask(__name__)
+CORS(app)
 
 # Register routes from app_food_item
 for rule in app_food_item.url_map.iter_rules():
