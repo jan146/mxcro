@@ -1,8 +1,5 @@
 from typing import Any
-
 from user_info.src.models.entities.user_info import UserInfo
-
-WEIGHT_DEFAULT: float = 100.0
 
 class UserInfoConverter():
     @staticmethod
