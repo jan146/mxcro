@@ -15,6 +15,7 @@ class FoodItemConverter():
         weight_g: float = get_multiple_keys(content, ["serving_size_g", "weight_g"])
         normalization_multiplier: float = WEIGHT_DEFAULT / weight_g if normalized_weight else 1.0
         food_item_entity: FoodItem = FoodItem(
+            id=content.get("id", None),
             name=content["name"].lower(),
             calories=(content["calories"] * normalization_multiplier),
             weight_g=WEIGHT_DEFAULT if normalized_weight else weight_g,
@@ -32,6 +33,7 @@ class FoodItemConverter():
     @staticmethod
     def to_dict(entity: FoodItem) -> dict[str, Any]:
         return {
+            "id": str(entity.pk),
             "name": entity.name,
             "calories": entity.calories,
             "weight_g": entity.weight_g,
