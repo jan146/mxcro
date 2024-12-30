@@ -14,6 +14,15 @@ tmux send-keys -t "$SESSION_NAME" ". venv/bin/activate" C-m
 # Run database in bottom-right pane
 tmux split-window -h
 tmux send-keys -t "$SESSION_NAME" "podman-compose -f compose.yaml up" C-m
+# Run API for all three microservices right of code editor
+# tmux select-pane -t "${SESSION_NAME}.0"
+# tmux split-window -h -l "25%"
+# tmux send-keys -t "$SESSION_NAME" ". venv/bin/activate && python -m food_item.src.api.v1.api" C-m
+# tmux split-window -v -l "66%"
+# tmux send-keys -t "$SESSION_NAME" ". venv/bin/activate && python -m user_info.src.api.v1.api" C-m
+# tmux split-window -v -l "50%"
+# tmux send-keys -t "$SESSION_NAME" ". venv/bin/activate && python -m logged_item.src.api.v1.api" C-m
+# tmux attach -t "$SESSION_NAME"
 
 # Create new window for frontend
 tmux new-window
