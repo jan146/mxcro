@@ -8,6 +8,7 @@ import requests
 import os
 import json
 import time
+import datetime
 
 RESPONSE_ENCODING: str = "utf-8"
 
@@ -53,7 +54,7 @@ def add_item_to_user(user_id: str, data: dict[str, str]) -> LoggedItem:
     logged_item.save()
     return logged_item
 
-def get_logged_items(user_id: str) -> list[dict[str, Any]]:
+def get_logged_items(user_id: str, from_date: datetime.date, to_date: datetime.date) -> list[dict[str, Any]]:
 
     # Check if user exists
     response = requests.get(f"{os.environ['BACKEND_URL']}/user_info/{user_id}")
@@ -63,7 +64,13 @@ def get_logged_items(user_id: str) -> list[dict[str, Any]]:
         raise Exception(f"Failed to check if user exists: {response.status_code=}, {response.text=}")
 
     # Get list of logged items
-    logged_items: list[LoggedItem] = list(LoggedItem.objects(user_id=user_id))
+    from_timestamp: float = datetime.datetime(from_date.year, from_date.month, from_date.day, 0, 0, 0).timestamp()
+    to_timestamp: float = datetime.datetime(to_date.year, to_date.month, to_date.day, 23, 59, 59).timestamp()
+    logged_items: list[LoggedItem] = list(LoggedItem.objects(
+        user_id=user_id,
+        timestamp__gte=from_timestamp,
+        timestamp__lte=to_timestamp,
+    ))
     
     # Build list of logged items
     logged_items_list: list[dict[str, Any]] = []

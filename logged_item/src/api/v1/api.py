@@ -1,4 +1,3 @@
-import requests
 import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -9,6 +8,8 @@ from typing import Any, cast
 from logged_item.src.core.manage_logged_item import add_item_to_user, get_logged_items
 from logged_item.src.models.converters.logged_item_converter import LoggedItemConverter
 from logged_item.src.models.entities.logged_item import LoggedItem
+import datetime
+import time
 
 load_dotenv()
 connect(
@@ -38,8 +39,16 @@ def add_item(user_id: str):
             except Exception as e:
                 return jsonify({"error": f"Failed to log item: {str(e)}"}), 400
         case "get":
+            from_date: datetime.date = datetime.date.fromtimestamp(0)
+            to_date: datetime.date = datetime.date.fromtimestamp(time.time())
+            from_str: str | None = request.args.get("from")
+            to_str: str | None = request.args.get("to")
+            if from_str:
+                from_date = datetime.datetime.strptime(from_str, "%d/%m/%Y").date()
+            if to_str:
+                to_date = datetime.datetime.strptime(to_str, "%d/%m/%Y").date()
             try:
-                logged_items: list[dict[str, Any]] = get_logged_items(user_id)
+                logged_items: list[dict[str, Any]] = get_logged_items(user_id, from_date, to_date)
                 return jsonify({"logged_items": logged_items}), 200
             except Exception as e:
                 return jsonify({"error": f"Failed to get logged items: {str(e)}"}), 400
