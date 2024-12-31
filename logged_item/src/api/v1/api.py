@@ -5,7 +5,7 @@ from gevent.pywsgi import WSGIServer
 from mongoengine import connect
 from dotenv import load_dotenv
 from typing import Any, cast
-from logged_item.src.core.manage_logged_item import add_item_to_user, get_logged_items
+from logged_item.src.core.manage_logged_item import add_item_to_user, delete_logged_item, get_logged_items
 from logged_item.src.models.converters.logged_item_converter import LoggedItemConverter
 from logged_item.src.models.entities.logged_item import LoggedItem
 import datetime
@@ -26,15 +26,15 @@ CORS(app)
 def home():
     return "Hello, this is the root endpoint of logged_item"
 
-@app.route("/logged_item/<user_id>", methods=["GET", "POST", "OPTIONS"])
-def add_item(user_id: str):
+@app.route("/logged_item/<id>", methods=["GET", "POST", "OPTIONS", "DELETE"])
+def manage_item(id: str):
     match request.method.lower():
         case "options":
             return jsonify({}), 200
         case "post":
             data: dict[str, str] = cast(dict[str, str], request.json)
             try:
-                logged_item: LoggedItem = add_item_to_user(user_id, data)
+                logged_item: LoggedItem = add_item_to_user(id, data)
                 return jsonify({"message": "Successfully logged new item", "logged_item": LoggedItemConverter.to_dict(logged_item)}), 200
             except Exception as e:
                 return jsonify({"error": f"Failed to log item: {str(e)}"}), 400
@@ -48,10 +48,13 @@ def add_item(user_id: str):
             if to_str:
                 to_date = datetime.datetime.strptime(to_str, "%d/%m/%Y").date()
             try:
-                logged_items: list[dict[str, Any]] = get_logged_items(user_id, from_date, to_date)
+                logged_items: list[dict[str, Any]] = get_logged_items(id, from_date, to_date)
                 return jsonify({"logged_items": logged_items}), 200
             except Exception as e:
                 return jsonify({"error": f"Failed to get logged items: {str(e)}"}), 400
+        case "delete":
+            delete_logged_item(id)
+            return jsonify({"message": f"Successfully deleted logged item with {id=}"}), 200
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
 if __name__ == "__main__":

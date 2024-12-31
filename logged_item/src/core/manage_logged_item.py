@@ -86,3 +86,10 @@ def logged_item_to_food_item(logged_item: LoggedItem) -> FoodItem | None:
     food_items: list[FoodItem] = list(FoodItem.objects(pk=ObjectId(logged_item.food_item_id)))
     return food_items[0] if food_items else None
 
+def delete_logged_item(logged_item_id: str) -> bool:
+    logged_items: list[LoggedItem] = list(LoggedItem.objects(pk=ObjectId(logged_item_id)))
+    if not logged_items:
+        return False
+    logged_items[0].delete()
+    return True
+
