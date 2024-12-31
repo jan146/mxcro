@@ -78,7 +78,9 @@ def get_logged_items(user_id: str, from_date: datetime.date, to_date: datetime.d
         food_item: FoodItem | None = logged_item_to_food_item(logged_item)
         if food_item is None:
             raise Exception(f"Failed to find {logged_item.food_item_id=}")
-        logged_items_list.append(FoodItemConverter.to_dict(food_item, normalized_weight=True, quantity_multiplier=logged_item.quantity/100.0))
+        food_item_dict: dict[str, Any] = FoodItemConverter.to_dict(food_item, normalized_weight=True, quantity_multiplier=logged_item.quantity/100.0)
+        food_item_dict["id"] = str(logged_item.pk)
+        logged_items_list.append(food_item_dict)
     return logged_items_list
 
 def logged_item_to_food_item(logged_item: LoggedItem) -> FoodItem | None:
