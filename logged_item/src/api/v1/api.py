@@ -5,8 +5,8 @@ from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect
 from dotenv import load_dotenv
-from typing import cast
-from logged_item.src.core.manage_logged_item import add_item_to_user
+from typing import Any, cast
+from logged_item.src.core.manage_logged_item import add_item_to_user, get_logged_items
 from logged_item.src.models.converters.logged_item_converter import LoggedItemConverter
 from logged_item.src.models.entities.logged_item import LoggedItem
 
@@ -25,9 +25,8 @@ CORS(app)
 def home():
     return "Hello, this is the root endpoint of logged_item"
 
-@app.route("/logged_item/<user_id>", methods=["POST", "OPTIONS"])
+@app.route("/logged_item/<user_id>", methods=["GET", "POST", "OPTIONS"])
 def add_item(user_id: str):
-    print(request.method.lower())
     match request.method.lower():
         case "options":
             return jsonify({}), 200
@@ -38,6 +37,12 @@ def add_item(user_id: str):
                 return jsonify({"message": "Successfully logged new item", "logged_item": LoggedItemConverter.to_dict(logged_item)}), 200
             except Exception as e:
                 return jsonify({"error": f"Failed to log item: {str(e)}"}), 400
+        case "get":
+            try:
+                logged_items: list[dict[str, Any]] = get_logged_items(user_id)
+                return jsonify({"logged_items": logged_items}), 200
+            except Exception as e:
+                return jsonify({"error": f"Failed to get logged items: {str(e)}"}), 400
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
 if __name__ == "__main__":

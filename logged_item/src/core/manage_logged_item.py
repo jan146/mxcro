@@ -1,9 +1,9 @@
 from typing import Any
+from bson import ObjectId
 from dotenv import load_dotenv
 from food_item.src.models.converters.food_item_converter import FoodItemConverter
 from food_item.src.models.entities.food_item import FoodItem
 from logged_item.src.models.entities.logged_item import LoggedItem
-from user_info.src.core.user_info import get_user_info
 import requests
 import os
 import json
@@ -52,4 +52,30 @@ def add_item_to_user(user_id: str, data: dict[str, str]) -> LoggedItem:
     )
     logged_item.save()
     return logged_item
+
+def get_logged_items(user_id: str) -> list[dict[str, Any]]:
+
+    # Check if user exists
+    response = requests.get(f"{os.environ['BACKEND_URL']}/user_info/{user_id}")
+    if response.status_code == 404:
+        raise Exception(f"User with id {user_id} does not exist")
+    if not response.ok:
+        raise Exception(f"Failed to check if user exists: {response.status_code=}, {response.text=}")
+
+    # Get list of logged items
+    logged_items: list[LoggedItem] = list(LoggedItem.objects(user_id=user_id))
+    
+    # Build list of logged items
+    logged_items_list: list[dict[str, Any]] = []
+    for logged_item in logged_items:
+        food_item: FoodItem | None = logged_item_to_food_item(logged_item)
+        if food_item is None:
+            raise Exception(f"Failed to find {logged_item.food_item_id=}")
+        logged_items_list.append(FoodItemConverter.to_dict(food_item, normalized_weight=True, quantity_multiplier=logged_item.quantity/100.0))
+    return logged_items_list
+
+def logged_item_to_food_item(logged_item: LoggedItem) -> FoodItem | None:
+    # Maybe do a requery if this specific food item is no longer present in database?
+    food_items: list[FoodItem] = list(FoodItem.objects(pk=ObjectId(logged_item.food_item_id)))
+    return food_items[0] if food_items else None
 
