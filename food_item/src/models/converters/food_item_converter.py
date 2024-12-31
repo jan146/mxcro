@@ -5,7 +5,7 @@ WEIGHT_DEFAULT: float = 100.0
 
 def get_multiple_keys(dictionary: dict[Any, Any], keys: list[Any]) -> Any:
     for key in keys:
-        if dictionary.get(key):
+        if dictionary.get(key) is not None:
             return dictionary[key]
     raise KeyError(f"None of the following keys were present: {str(keys)}")
 
