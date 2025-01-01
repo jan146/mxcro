@@ -13,7 +13,7 @@ RESPONSE_ENCODING: str = "utf-8"
 
 load_dotenv()
 
-def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) -> LoggedItem:
+def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) -> LoggedItem | None:
     
     # Parse request body
     food_name: str = data.get("food_name", "").strip()
@@ -32,6 +32,8 @@ def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) ->
     response: requests.Response = requests.get(f"{os.environ['BACKEND_URL']}/food_item/{food_name}")
     if not response.ok:
         raise Exception(f"Failed to fetch food item: {response.status_code=}, {response.text=}")
+    if not response.content:
+        return None
     content: dict[str, Any] = json.loads(response.content.decode(RESPONSE_ENCODING))
     food_item_dict: dict[str, Any] = content["food_item"]
     food_item: FoodItem = FoodItemConverter.to_entity(food_item_dict)
