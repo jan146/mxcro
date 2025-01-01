@@ -11,6 +11,8 @@ from logged_item.src.models.entities.logged_item import LoggedItem
 import datetime
 import time
 
+DATE_FORMAT: str = "%d/%m/%Y"
+
 load_dotenv()
 connect(
     db=os.environ["MONGO_DB_NAME"],
@@ -44,9 +46,9 @@ def manage_item(id: str):
             from_str: str | None = request.args.get("from")
             to_str: str | None = request.args.get("to")
             if from_str:
-                from_date = datetime.datetime.strptime(from_str, "%d/%m/%Y").date()
+                from_date = datetime.datetime.strptime(from_str, DATE_FORMAT).date()
             if to_str:
-                to_date = datetime.datetime.strptime(to_str, "%d/%m/%Y").date()
+                to_date = datetime.datetime.strptime(to_str, DATE_FORMAT).date()
             try:
                 logged_items: list[dict[str, Any]] = get_logged_items(id, from_date, to_date)
                 return jsonify({"logged_items": logged_items}), 200
