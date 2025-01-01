@@ -7,14 +7,13 @@ from logged_item.src.models.entities.logged_item import LoggedItem
 import requests
 import os
 import json
-import time
 import datetime
 
 RESPONSE_ENCODING: str = "utf-8"
 
 load_dotenv()
 
-def add_item_to_user(user_id: str, data: dict[str, str]) -> LoggedItem:
+def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) -> LoggedItem:
     
     # Parse request body
     food_name: str = data.get("food_name", "").strip()
@@ -43,10 +42,13 @@ def add_item_to_user(user_id: str, data: dict[str, str]) -> LoggedItem:
         raise Exception(f"User with id {user_id} does not exist")
     if not response.ok:
         raise Exception(f"Failed to check if user exists: {response.status_code=}, {response.text=}")
-
+    
+    # Create arbitrary timestamp on specified date
+    timestamp: float = datetime.datetime(date.year, date.month, date.day, 12, 0, 0).timestamp()
+    
     # Create new logged item
     logged_item: LoggedItem = LoggedItem(
-        timestamp=time.time(),
+        timestamp=timestamp,
         quantity=weight,
         user_id=user_id,
         food_item_id=str(food_item.pk),

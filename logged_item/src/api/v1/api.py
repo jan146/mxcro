@@ -35,8 +35,12 @@ def manage_item(id: str):
             return jsonify({}), 200
         case "post":
             data: dict[str, str] = cast(dict[str, str], request.json)
+            date_str: str | None = request.args.get("date")
+            date: datetime.date = datetime.date.today()
+            if date_str:
+                date = datetime.datetime.strptime(date_str, DATE_FORMAT).date()
             try:
-                logged_item: LoggedItem = add_item_to_user(id, data)
+                logged_item: LoggedItem = add_item_to_user(id, date, data)
                 return jsonify({"message": "Successfully logged new item", "logged_item": LoggedItemConverter.to_dict(logged_item)}), 200
             except Exception as e:
                 return jsonify({"error": f"Failed to log item: {str(e)}"}), 400
