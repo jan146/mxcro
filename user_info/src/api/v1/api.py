@@ -1,11 +1,11 @@
 import os
-from typing import cast
+from typing import Any, cast
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect
 from dotenv import load_dotenv
-from user_info.src.core.user_info import create_user, get_user_info, get_user_info_by_username
+from user_info.src.core.user_info import create_user, delete_user, get_user_info, get_user_info_by_username
 from user_info.src.models.converters.user_info_converter import UserInfoConverter
 from user_info.src.models.entities.user_info import UserInfo
 
@@ -38,15 +38,20 @@ def user_info():
                 return jsonify({"error": f"Failed to create user: {str(e)}"}), 400
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
-@app.route("/user_info/id/<id>", methods=["GET"])
+@app.route("/user_info/id/<id>", methods=["GET", "DELETE"])
 def user_info_by_id(id: str):
+    user_info: UserInfo | None = get_user_info(id)
+    if user_info is None:
+        return jsonify({"error": "User not found"}), 404
     match request.method.lower():
+        case "options":
+            return jsonify({}), 200
+        case "delete":
+            user_dict: dict[str, Any] = UserInfoConverter.to_dict(user_info)
+            delete_user(user_info)
+            return jsonify({"message": "User successfully deleted", "user_info": user_dict}), 200
         case "get":
-            user_info: UserInfo | None = get_user_info(id)
-            if user_info:
-                return jsonify(UserInfoConverter.to_dict(user_info)), 200
-            else:
-                return jsonify({"error": "User not found"}), 404
+            return jsonify(UserInfoConverter.to_dict(user_info)), 200
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
 @app.route("/user_info/username/<username>", methods=["GET"])

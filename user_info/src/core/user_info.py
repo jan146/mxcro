@@ -21,6 +21,9 @@ def get_user_info_by_username(username: str) -> UserInfo | None:
     else:
         return None
 
+def delete_user(user: UserInfo):
+    return user.delete()
+
 def create_user(data: dict[str, str]) -> UserInfo:
     user: UserInfo = UserInfo(
         username=data["username"],
