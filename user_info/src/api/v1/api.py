@@ -24,17 +24,11 @@ CORS(app)
 def home():
     return "Hello, this is the root endpoint of user_info"
 
-@app.route("/user_info/id/<id>", methods=["GET", "POST", "OPTIONS"])
-def user_info_by_id(id: str):
+@app.route("/user_info/", methods=["POST", "OPTIONS"])
+def user_info():
     match request.method.lower():
         case "options":
             return jsonify({}), 200
-        case "get":
-            user_info: UserInfo | None = get_user_info(id)
-            if user_info:
-                return jsonify(UserInfoConverter.to_dict(user_info)), 200
-            else:
-                return jsonify({"error": "User not found"}), 404
         case "post":
             data: dict[str, str] = cast(dict[str, str], request.json)
             try:
@@ -42,6 +36,17 @@ def user_info_by_id(id: str):
                 return jsonify({"message": "User successfully created", "user_info": UserInfoConverter.to_dict(user)}), 200
             except Exception as e:
                 return jsonify({"error": f"Failed to create user: {str(e)}"}), 400
+    return jsonify({"error": f"Method not supported: {request.method}"}), 405
+
+@app.route("/user_info/id/<id>", methods=["GET"])
+def user_info_by_id(id: str):
+    match request.method.lower():
+        case "get":
+            user_info: UserInfo | None = get_user_info(id)
+            if user_info:
+                return jsonify(UserInfoConverter.to_dict(user_info)), 200
+            else:
+                return jsonify({"error": "User not found"}), 404
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
 @app.route("/user_info/username/<username>", methods=["GET"])
