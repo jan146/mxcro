@@ -3,7 +3,7 @@ from user_info.src.models.entities.user_info import UserInfo
 
 def get_user_info(id: str) -> UserInfo | None:
     try:
-        user_infos: list[UserInfo] | None = UserInfo.objects(pk=ObjectId(id))
+        user_infos: list[UserInfo] | None = list(UserInfo.objects(pk=ObjectId(id)))
     except Exception as e:
         return None
     if user_infos:
@@ -13,7 +13,7 @@ def get_user_info(id: str) -> UserInfo | None:
 
 def get_user_info_by_username(username: str) -> UserInfo | None:
     try:
-        user_infos: list[UserInfo] | None = UserInfo.objects(username=username)
+        user_infos: list[UserInfo] | None = list(UserInfo.objects(username=username))
     except Exception as e:
         return None
     if user_infos:
