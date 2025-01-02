@@ -26,7 +26,7 @@ CORS(app)
 def home():
     return "Hello, this is the root endpoint of user_info"
 
-@app.route("/user_info/<id>", methods=["GET", "POST", "OPTIONS"])
+@app.route("/user_info/id/<id>", methods=["GET", "POST", "OPTIONS"])
 def user_info(id: str):
     match request.method.lower():
         case "options":
