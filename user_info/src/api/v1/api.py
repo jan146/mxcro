@@ -5,7 +5,7 @@ from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect
 from dotenv import load_dotenv
-from user_info.src.core.user_info import create_user, delete_user, get_user_info, get_user_info_by_username
+from user_info.src.core.manage_user_info import create_user, delete_user, get_user_info, get_user_info_by_username
 from user_info.src.models.converters.user_info_converter import UserInfoConverter
 from user_info.src.models.entities.user_info import UserInfo
 
