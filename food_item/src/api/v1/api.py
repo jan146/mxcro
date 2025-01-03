@@ -4,7 +4,7 @@ from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect
 from dotenv import load_dotenv
-from food_item.src.core.nutrition_facts import get_nutrition_facts
+from food_item.src.core.manage_food_item import get_nutrition_facts
 from food_item.src.models.converters.food_item_converter import FoodItemConverter
 from food_item.src.models.entities.food_item import FoodItem
 
