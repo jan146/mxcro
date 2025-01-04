@@ -45,6 +45,3 @@ def get_nutrition_facts(query: str) -> FoodItem | tuple[int, str]:
     else:
         return response.status_code, response.text
 
-if __name__ == "__main__":
-    resp = get_nutrition_facts("100g yogurt")
-
