@@ -22,10 +22,11 @@ app: Flask = Flask(__name__)
 CORS(app)
 
 @app.route("/", methods=["GET"])
+@app.route("/api/v1", methods=["GET"])
 def home():
     return "Hello, this is the root endpoint of user_info"
 
-@app.route("/user_info/", methods=["POST", "OPTIONS"])
+@app.route("/api/v1/user_info/", methods=["POST", "OPTIONS"])
 def user_info():
     match request.method.lower():
         case "options":
@@ -39,7 +40,7 @@ def user_info():
                 return jsonify({"error": f"Failed to create user: {str(e)}"}), 400
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
-@app.route("/user_info/id/<id>", methods=["GET", "DELETE"])
+@app.route("/api/v1/user_info/id/<id>", methods=["GET", "DELETE"])
 def user_info_by_id(id: str):
     user_info: UserInfo | None = get_user_info(id)
     if user_info is None:
@@ -55,7 +56,7 @@ def user_info_by_id(id: str):
             return jsonify(UserInfoConverter.to_dict(user_info)), 200
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
-@app.route("/user_info/username/<username>", methods=["GET"])
+@app.route("/api/v1/user_info/username/<username>", methods=["GET"])
 def user_info_by_username(username: str):
     match request.method.lower():
         case "get":
@@ -66,7 +67,7 @@ def user_info_by_username(username: str):
                 return jsonify({"error": "User not found"}), 404
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
-@app.route("/user_info/daily_rda/<id>", methods=["GET"])
+@app.route("/api/v1/user_info/daily_rda/<id>", methods=["GET"])
 def daily_rda_for_user(id: str):
     match request.method.lower():
         case "get":

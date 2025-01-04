@@ -20,10 +20,11 @@ app: Flask = Flask(__name__)
 CORS(app)
 
 @app.route("/", methods=["GET"])
+@app.route("/api/v1", methods=["GET"])
 def home():
     return "Hello, this is the root endpoint of food_item"
 
-@app.route("/food_item/<query>", methods=["GET"])
+@app.route("/api/v1/food_item/<query>", methods=["GET"])
 def food_item(query: str):
     result: FoodItem | tuple[int, str] = get_nutrition_facts(query)
     if isinstance(result, FoodItem):

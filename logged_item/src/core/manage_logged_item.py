@@ -29,7 +29,7 @@ def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) ->
         raise Exception("Failed to cast weight to number")
     
     # Fetch food item from API
-    response: requests.Response = requests.get(f"{os.environ['BACKEND_URL']}/food_item/{food_name}")
+    response: requests.Response = requests.get(f"{os.environ['BACKEND_URL']}/api/v1/food_item/{food_name}")
     if not response.ok:
         raise Exception(f"Failed to fetch food item: {response.status_code=}, {response.text=}")
     if not response.content:
@@ -39,7 +39,7 @@ def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) ->
     food_item: FoodItem = FoodItemConverter.to_entity(food_item_dict)
 
     # Check if user exists
-    response = requests.get(f"{os.environ['BACKEND_URL']}/user_info/id/{user_id}")
+    response = requests.get(f"{os.environ['BACKEND_URL']}/api/v1/user_info/id/{user_id}")
     if response.status_code == 404:
         raise Exception(f"User with id {user_id} does not exist")
     if not response.ok:
@@ -61,7 +61,7 @@ def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) ->
 def get_logged_items(user_id: str, from_date: datetime.date, to_date: datetime.date) -> list[dict[str, Any]]:
 
     # Check if user exists
-    response = requests.get(f"{os.environ['BACKEND_URL']}/user_info/id/{user_id}")
+    response = requests.get(f"{os.environ['BACKEND_URL']}/api/v1/user_info/id/{user_id}")
     if response.status_code == 404:
         raise Exception(f"User with id {user_id} does not exist")
     if not response.ok:

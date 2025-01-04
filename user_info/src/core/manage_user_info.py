@@ -27,7 +27,7 @@ def get_user_info_by_username(username: str) -> UserInfo | None:
 def delete_user(user: UserInfo):
 
     # Delete all user's logged items
-    response: requests.Response = requests.delete(f"{os.environ['BACKEND_URL']}/logged_item/user/{str(user.pk)}")
+    response: requests.Response = requests.delete(f"{os.environ['BACKEND_URL']}/api/v1/logged_item/user/{str(user.pk)}")
     if not response.ok:
         raise Exception(f"Failed to delete user's logged items: {response.status_code=}, {response.text=}")
     # Delete user

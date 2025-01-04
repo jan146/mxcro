@@ -25,10 +25,11 @@ app: Flask = Flask(__name__)
 CORS(app)
 
 @app.route("/", methods=["GET"])
+@app.route("/api/v1", methods=["GET"])
 def home():
     return "Hello, this is the root endpoint of logged_item"
 
-@app.route("/logged_item/<id>", methods=["GET", "POST", "OPTIONS", "DELETE"])
+@app.route("/api/v1/logged_item/<id>", methods=["GET", "POST", "OPTIONS", "DELETE"])
 def manage_item(id: str):
     match request.method.lower():
         case "options":
@@ -65,7 +66,7 @@ def manage_item(id: str):
             return jsonify({"message": f"Successfully deleted logged item with {id=}"}), 200
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
-@app.route("/logged_item/user/<user_id>", methods=["OPTIONS", "DELETE"])
+@app.route("/api/v1/logged_item/user/<user_id>", methods=["OPTIONS", "DELETE"])
 def delete_user_data(user_id: str):
     match request.method.lower():
         case "options":
