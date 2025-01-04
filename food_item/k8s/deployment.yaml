@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: mxcro-food-item
-        image: jan146/mxcro:1.0
+        image: jan146/mxcro:1.1
         command: ["python"]
         args: ["-m", "food_item.src.api.v1.api"]
         ports:

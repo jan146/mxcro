@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: mxcro-logged-item
-        image: jan146/mxcro:1.0
+        image: jan146/mxcro:1.1
         command: ["python"]
         args: ["-m", "logged_item.src.api.v1.api"]
         ports:
