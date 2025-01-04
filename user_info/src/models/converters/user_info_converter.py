@@ -10,5 +10,7 @@ class UserInfoConverter():
             "age": entity.age,
             "height": entity.height,
             "weight": entity.weight,
+            "gender": entity.gender.value,
+            "activity_level": entity.activity_level.value,
         }
 
