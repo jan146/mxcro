@@ -5,6 +5,7 @@ from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect
 from dotenv import load_dotenv
+from user_info.src.core.daily_rda import get_daily_rda
 from user_info.src.core.manage_user_info import create_user, delete_user, get_user_info, get_user_info_by_username
 from user_info.src.models.converters.user_info_converter import UserInfoConverter
 from user_info.src.models.entities.user_info import UserInfo
@@ -63,6 +64,17 @@ def user_info_by_username(username: str):
                 return jsonify(UserInfoConverter.to_dict(user_info)), 200
             else:
                 return jsonify({"error": "User not found"}), 404
+    return jsonify({"error": f"Method not supported: {request.method}"}), 405
+
+@app.route("/user_info/daily_rda/<id>", methods=["GET"])
+def daily_rda_for_user(id: str):
+    match request.method.lower():
+        case "get":
+            user_info: UserInfo | None = get_user_info(id)
+            if user_info is None:
+                return jsonify({"error": "User not found"}), 404
+            daily_rda: dict[str, Any] = get_daily_rda(user_info)
+            return jsonify(daily_rda), 200
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
 if __name__ == "__main__":
