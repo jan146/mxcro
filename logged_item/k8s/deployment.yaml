@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mxcro-logged-item-deployment
+  labels:
+    app: mxcro
+    microservice: logged_item
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mxcro
+      microservice: logged_item
+  template:
+    metadata:
+      labels:
+        app: mxcro
+        microservice: logged_item
+    spec:
+      containers:
+      - name: mxcro-logged-item
+        image: jan146/mxcro:1.0
+        command: ["python"]
+        args: ["-m", "logged_item.src.api.v1.api"]
+        ports:
+        - containerPort: 5000
+          name: flask
+        env:
+          - name: FLASK_DEBUG
+            valueFrom:
+              configMapKeyRef:
+                name: mxcro-config-map
+                key: FLASK_DEBUG
+          - name: FLASK_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: mxcro-config-map
+                key: FLASK_HOST
+          - name: FLASK_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: mxcro-config-map
+                key: FLASK_PORT
+          - name: ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: mxcro-config-map
+                key: ENVIRONMENT
+          - name: BACKEND_URL
+            valueFrom:
+              configMapKeyRef:
+                name: mxcro-config-map
+                key: BACKEND_URL
+          - name: MONGO_DB_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: mxcro-config-map
+                key: MONGO_DB_NAME
+          - name: MONGO_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: mxcro-config-map
+                key: MONGO_HOST
+          - name: MONGO_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: mxcro-config-map
+                key: MONGO_PORT
+          - name: MONGO_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: mxcro-config-map
+                key: MONGO_USERNAME
+          - name: CALORIE_NINJAS_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: mxcro-secrets
+                key: CALORIE_NINJAS_API_KEY
+          - name: SERVERLESS_AUTH
+            valueFrom:
+              secretKeyRef:
+                name: mxcro-secrets
+                key: SERVERLESS_AUTH
+          - name: MONGO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mxcro-secrets
+                key: MONGO_PASSWORD
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mxcro-logged-item-service
+spec:
+  selector:
+    app: mxcro
+    microservice: logged_item
+  ports:
+    - port: 5000
+      targetPort: 5000
+  type: LoadBalancer
+
