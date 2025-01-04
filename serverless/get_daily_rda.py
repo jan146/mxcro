@@ -119,9 +119,10 @@ def main(args):
     return {
         "bmr": bmr,
         "tdee": tdee,
-        "fat": fat,
+        "calories": tdee,
+        "fat_total": fat,
         "fat_saturated": fat_saturated,
-        "carbs": carbs,
+        "carbohydrates": carbs,
         "fiber": fiber,
         "sugar": sugar,
         "protein": protein,
@@ -129,4 +130,3 @@ def main(args):
         "potassium": potassium,
         "cholesterol": cholesterol,
     }
-
