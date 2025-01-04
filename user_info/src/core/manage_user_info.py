@@ -1,4 +1,5 @@
 from bson import ObjectId
+from user_info.src.models.converters.user_info_converter import UserInfoConverter
 from user_info.src.models.entities.user_info import UserInfo
 
 def get_user_info(id: str) -> UserInfo | None:
@@ -25,12 +26,7 @@ def delete_user(user: UserInfo):
     return user.delete()
 
 def create_user(data: dict[str, str]) -> UserInfo:
-    user: UserInfo = UserInfo(
-        username=data["username"],
-        age=data["age"],
-        height=data["height"],
-        weight=data["weight"],
-    )
+    user: UserInfo = UserInfoConverter.to_entity(data)
     user.save()
     return user
 
