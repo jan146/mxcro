@@ -99,3 +99,7 @@ def delete_logged_item(logged_item_id: str) -> bool:
     logged_items[0].delete()
     return True
 
+def delete_logged_items_for_user(user_id: str):
+    import ipdb; ipdb.set_trace()
+    return LoggedItem.objects(user_id=user_id).delete()
+

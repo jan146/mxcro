@@ -5,7 +5,7 @@ from gevent.pywsgi import WSGIServer
 from mongoengine import connect
 from dotenv import load_dotenv
 from typing import Any, cast
-from logged_item.src.core.manage_logged_item import add_item_to_user, delete_logged_item, get_logged_items
+from logged_item.src.core.manage_logged_item import add_item_to_user, delete_logged_item, delete_logged_items_for_user, get_logged_items
 from logged_item.src.models.converters.logged_item_converter import LoggedItemConverter
 from logged_item.src.models.entities.logged_item import LoggedItem
 import datetime
@@ -63,6 +63,19 @@ def manage_item(id: str):
         case "delete":
             delete_logged_item(id)
             return jsonify({"message": f"Successfully deleted logged item with {id=}"}), 200
+    return jsonify({"error": f"Method not supported: {request.method}"}), 405
+
+@app.route("/logged_item/user/<user_id>", methods=["OPTIONS", "DELETE"])
+def delete_user_data(user_id: str):
+    match request.method.lower():
+        case "options":
+            return jsonify({}), 200
+        case "delete":
+            try:
+                delete_logged_items_for_user(user_id)
+            except Exception as e:
+                return jsonify({"error": f"Failed to delete user: {str(e)}"}), 400
+            return jsonify({"message": f"Successfully deleted logged items for {user_id=}"}), 200
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
 if __name__ == "__main__":
