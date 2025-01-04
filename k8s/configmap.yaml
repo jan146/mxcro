@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mxcro-config-map
+data:
+  FLASK_DEBUG: "False"
+  FLASK_HOST: "0.0.0.0"
+  FLASK_PORT: "5000"
+  ENVIRONMENT: "production"
+  BACKEND_URL: "todo"
+  MONGO_DB_NAME: "mxcro"
+  MONGO_HOST: "mongodb+srv://db-mongodb-fra1-07259-dda8d04f.mongo.ondigitalocean.com"
+  MONGO_PORT: "27017"
+  MONGO_USERNAME: "doadmin"
+  SERVERLESS_NAMESPACE_URL: "https://faas-fra1-afec6ce7.doserverless.co/api/v1/namespaces/fn-1fe3ffab-d547-44e2-8b38-2158e175bae3"
+
