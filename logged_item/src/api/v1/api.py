@@ -29,8 +29,18 @@ CORS(app)
 def home():
     return "Hello, this is the root endpoint of logged_item"
 
-@app.route("/api/v1/logged_item/<id>", methods=["GET", "POST", "OPTIONS", "DELETE"])
+@app.route("/api/v1/logged_item/<id>", methods=["OPTIONS", "DELETE"])
 def manage_item(id: str):
+    match request.method.lower():
+        case "options":
+            return jsonify({}), 200
+        case "delete":
+            delete_logged_item(id)
+            return jsonify({"message": f"Successfully deleted logged item with {id=}"}), 200
+    return jsonify({"error": f"Method not supported: {request.method}"}), 405
+
+@app.route("/api/v1/logged_item/user/<user_id>", methods=["OPTIONS", "DELETE", "POST", "GET"])
+def manage_user(user_id: str):
     match request.method.lower():
         case "options":
             return jsonify({}), 200
@@ -41,7 +51,7 @@ def manage_item(id: str):
             if date_str:
                 date = datetime.datetime.strptime(date_str, DATE_FORMAT).date()
             try:
-                logged_item: LoggedItem | None = add_item_to_user(id, date, data)
+                logged_item: LoggedItem | None = add_item_to_user(user_id, date, data)
                 if logged_item is None:
                     return jsonify({"error": f"The queried food \"{data['food_name']}\" is unfortunately not available"}), 200
                 return jsonify({"message": "Successfully logged new item", "logged_item": LoggedItemConverter.to_dict(logged_item)}), 200
@@ -57,20 +67,10 @@ def manage_item(id: str):
             if to_str:
                 to_date = datetime.datetime.strptime(to_str, DATE_FORMAT).date()
             try:
-                logged_items: list[dict[str, Any]] = get_logged_items(id, from_date, to_date)
+                logged_items: list[dict[str, Any]] = get_logged_items(user_id, from_date, to_date)
                 return jsonify({"logged_items": logged_items}), 200
             except Exception as e:
                 return jsonify({"error": f"Failed to get logged items: {str(e)}"}), 400
-        case "delete":
-            delete_logged_item(id)
-            return jsonify({"message": f"Successfully deleted logged item with {id=}"}), 200
-    return jsonify({"error": f"Method not supported: {request.method}"}), 405
-
-@app.route("/api/v1/logged_item/user/<user_id>", methods=["OPTIONS", "DELETE"])
-def delete_user_data(user_id: str):
-    match request.method.lower():
-        case "options":
-            return jsonify({}), 200
         case "delete":
             try:
                 delete_logged_items_for_user(user_id)
