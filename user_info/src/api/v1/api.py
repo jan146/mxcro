@@ -6,7 +6,7 @@ from gevent.pywsgi import WSGIServer
 from mongoengine import connect, get_connection
 from dotenv import load_dotenv
 from user_info.src.core.daily_rda import get_daily_rda
-from user_info.src.core.manage_user_info import create_user, delete_user, get_user_info, get_user_info_by_username
+from user_info.src.core.manage_user_info import check_serverless, create_user, delete_user, get_user_info, get_user_info_by_username
 from user_info.src.models.converters.user_info_converter import UserInfoConverter
 from user_info.src.models.entities.user_info import UserInfo
 
@@ -89,6 +89,11 @@ def readiness_probe():
         get_connection().server_info()
     except Exception as e:
         return jsonify({"error": f"Database not available: {str(e)}"}), 503
+    # Check serverless functions availability
+    try:
+        check_serverless()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 504
     return jsonify({"message": "Readiness probe successful"}), 200
 
 if __name__ == "__main__":

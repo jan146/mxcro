@@ -4,7 +4,7 @@ from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect, get_connection
 from dotenv import load_dotenv
-from food_item.src.core.manage_food_item import check_calorie_ninjas_api_status, check_serverless, get_nutrition_facts
+from food_item.src.core.manage_food_item import check_calorie_ninjas_api_status, get_nutrition_facts
 from food_item.src.models.converters.food_item_converter import FoodItemConverter
 from food_item.src.models.entities.food_item import FoodItem
 
@@ -42,11 +42,9 @@ def readiness_probe():
         get_connection().server_info()
     except Exception as e:
         return jsonify({"error": f"Database not available: {str(e)}"}), 503
+    # Check calorie ninjas API
     try:
-        # Check calorie ninjas API
         check_calorie_ninjas_api_status()
-        # Check serverless functions
-        check_serverless()
     except Exception as e:
         return jsonify({"error": str(e)}), 504
     return jsonify({"message": "Readiness probe successful"}), 200

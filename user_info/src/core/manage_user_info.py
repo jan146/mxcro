@@ -1,8 +1,23 @@
 import os
+from typing import Any
 import requests
 from bson import ObjectId
 from user_info.src.models.converters.user_info_converter import UserInfoConverter
 from user_info.src.models.entities.user_info import UserInfo
+
+def check_serverless():
+    url: str = f"{os.environ['SERVERLESS_NAMESPACE_URL']}/actions/health"
+    params: dict[str, Any] = {
+        "blocking": True,
+        "result": True,
+    }
+    headers: dict[str, Any] = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {os.environ['SERVERLESS_AUTH']}",
+    }
+    response: requests.Response = requests.post(url=url, params=params, headers=headers, data="")
+    if not response.ok:
+        raise Exception(f"Error while executing serverless function: {response.status_code=}, {response.text=}")
 
 def get_user_info(id: str) -> UserInfo | None:
     try:
