@@ -8,21 +8,21 @@ spec:
   rules:
     - http:
         paths:
-          - path: /api/v1/food_item/*
+          - path: /api/v1/food_item/
             pathType: Prefix
             backend:
               service:
                 name: mxcro-food-item-service
                 port:
                   number: 5000
-          - path: /api/v1/logged_item/*
+          - path: /api/v1/logged_item/
             pathType: Prefix
             backend:
               service:
                 name: mxcro-logged-item-service
                 port:
                   number: 5000
-          - path: /api/v1/user_info/*
+          - path: /api/v1/user_info/
             pathType: Prefix
             backend:
               service:
