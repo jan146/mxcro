@@ -29,11 +29,25 @@ spec:
         command: ["python"]
         args: ["-m", "logged_item.src.api.v1.api"]
         ports:
-        - containerPort: 5000
-          name: flask
+        - name: flask
+          containerPort: 5000
         envFrom:
           - configMapRef:
               name: mxcro-config-map
           - secretRef:
               name: mxcro-secrets
+        livenessProbe:
+          httpGet:
+            path: /api/v1/logged_item/health/live
+            port: 5000
+          initialDelaySeconds: 20
+          periodSeconds: 3
+          timeoutSeconds: 1
+        readinessProbe:
+          httpGet:
+            path: /api/v1/logged_item/health/ready
+            port: 5000
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 3
 
