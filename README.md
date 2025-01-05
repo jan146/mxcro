@@ -25,7 +25,11 @@ git clone https://github.com/jan146/mxcro.git
 cd mxcro
 pip install -r requirements.txt
 $EDITOR .env                                   # See section "Environment setup"
-python -m [microservice].src.api.v1.api        # [microservice] is one of the three microservices
+python -m [microservice].src.api.v1.api        # [microservice] must be one of the three microservices
+```
+For development/debugging, you can also use the combined API:
+```sh
+python api.py
 ```
 
 ## Environment setup
