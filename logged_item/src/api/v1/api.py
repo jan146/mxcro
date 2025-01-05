@@ -2,7 +2,7 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
-from mongoengine import connect
+from mongoengine import connect, get_connection
 from dotenv import load_dotenv
 from typing import Any, cast
 from logged_item.src.core.manage_logged_item import add_item_to_user, delete_logged_item, delete_logged_items_for_user, get_logged_items
@@ -78,6 +78,19 @@ def manage_user(user_id: str):
                 return jsonify({"error": f"Failed to delete user: {str(e)}"}), 400
             return jsonify({"message": f"Successfully deleted logged items for {user_id=}"}), 200
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
+
+@app.route("/api/v1/logged_item/health/live", methods=["GET"])
+def liveness_probe():
+    return jsonify({"message": "Liveness probe successful"}), 200
+
+@app.route("/api/v1/logged_item/health/ready", methods=["GET"])
+def readiness_probe():
+    # Check database availability
+    try:
+        get_connection().server_info()
+    except Exception as e:
+        return jsonify({"error": f"Database not available: {str(e)}"}), 503
+    return jsonify({"message": "Readiness probe successful"}), 200
 
 if __name__ == "__main__":
     environment: str = os.environ.get("ENVIRONMENT", "development").lower()
