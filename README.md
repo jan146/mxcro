@@ -5,9 +5,10 @@ The goal is to help the user make better decisions for maintaining a healthy and
 | Technology    | Implementation |
 | ------------- | -------------- |
 | Backend | Python (Flask) |
-| Frontend | Vue.js |
+| Frontend | Vue.js, TypeScript, Bun |
 | Database | MongoDB |
 | ODM | MongoEngine |
+| Container orchestration | Kubernetes |
 
 ## Structure
 
