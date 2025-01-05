@@ -25,6 +25,7 @@ spec:
       containers:
       - name: mxcro-user-info
         image: jan146/mxcro:1.1
+        imagePullPolicy: Always
         command: ["python"]
         args: ["-m", "user_info.src.api.v1.api"]
         ports:
