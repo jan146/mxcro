@@ -80,11 +80,11 @@ def manage_user(user_id: str):
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
 @app.route("/api/v1/logged_item/health/live", methods=["GET"])
-def liveness_probe():
+def logged_item_liveness_probe():
     return jsonify({"message": "Liveness probe successful"}), 200
 
 @app.route("/api/v1/logged_item/health/ready", methods=["GET"])
-def readiness_probe():
+def logged_item_readiness_probe():
     # Check database availability
     try:
         get_connection().server_info()

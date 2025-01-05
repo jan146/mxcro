@@ -79,11 +79,11 @@ def daily_rda_for_user(id: str):
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
 
 @app.route("/api/v1/user_info/health/live", methods=["GET"])
-def liveness_probe():
+def user_info_liveness_probe():
     return jsonify({"message": "Liveness probe successful"}), 200
 
 @app.route("/api/v1/user_info/health/ready", methods=["GET"])
-def readiness_probe():
+def user_info_readiness_probe():
     # Check database availability
     try:
         get_connection().server_info()

@@ -32,11 +32,11 @@ def food_item(query: str):
     return jsonify({"error": result[1]}), result[0]
 
 @app.route("/api/v1/food_item/health/live", methods=["GET"])
-def liveness_probe():
+def food_item_liveness_probe():
     return jsonify({"message": "Liveness probe successful"}), 200
 
 @app.route("/api/v1/food_item/health/ready", methods=["GET"])
-def readiness_probe():
+def food_item_readiness_probe():
     # Check database availability
     try:
         get_connection().server_info()
