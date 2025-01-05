@@ -2,9 +2,9 @@ import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
-from mongoengine import connect
+from mongoengine import connect, get_connection
 from dotenv import load_dotenv
-from food_item.src.core.manage_food_item import get_nutrition_facts
+from food_item.src.core.manage_food_item import check_calorie_ninjas_api_status, check_serverless, get_nutrition_facts
 from food_item.src.models.converters.food_item_converter import FoodItemConverter
 from food_item.src.models.entities.food_item import FoodItem
 
@@ -30,6 +30,26 @@ def food_item(query: str):
     if isinstance(result, FoodItem):
         return jsonify({"food_item": FoodItemConverter.to_dict(result)}), 200
     return jsonify({"error": result[1]}), result[0]
+
+@app.route("/api/v1/food_item/health/live", methods=["GET"])
+def liveness_probe():
+    return jsonify({"message": "Liveness probe successful"}), 200
+
+@app.route("/api/v1/food_item/health/ready", methods=["GET"])
+def readiness_probe():
+    # Check database availability
+    try:
+        get_connection().server_info()
+    except Exception as e:
+        return jsonify({"error": f"Database not available: {str(e)}"}), 503
+    try:
+        # Check calorie ninjas API
+        check_calorie_ninjas_api_status()
+        # Check serverless functions
+        check_serverless()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 504
+    return jsonify({"message": "Readiness probe successful"}), 200
 
 if __name__ == "__main__":
     environment: str = os.environ.get("ENVIRONMENT", "development").lower()

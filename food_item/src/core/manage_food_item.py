@@ -15,6 +15,28 @@ def check_existing_records(query: str) -> FoodItem | None:
     result: list[FoodItem] | None = FoodItem.objects(name=query.lower())
     return result[0] if result else None
 
+def check_serverless():
+    url: str = f"{os.environ['SERVERLESS_NAMESPACE_URL']}/actions/health"
+    params: dict[str, Any] = {
+        "blocking": True,
+        "result": True,
+    }
+    headers: dict[str, Any] = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {os.environ['SERVERLESS_AUTH']}",
+    }
+    response: requests.Response = requests.post(url=url, params=params, headers=headers, data="")
+    if not response.ok:
+        raise Exception(f"Error while executing serverless function: {response.status_code=}, {response.text=}")
+
+def check_calorie_ninjas_api_status():
+    # Sadly, it doesn't have ANY status/health endpoint
+    url: str = "https://api.calorieninjas.com"
+    try:
+        requests.get(url=url, timeout=5)
+    except Exception as e:
+        raise Exception(f"Timeout reached when reaching Calorie Ninjas API {str(e)}")
+
 def get_nutrition_facts(query: str) -> FoodItem | tuple[int, str]:
     cached_record: FoodItem | None = check_existing_records(query)
     if cached_record:
