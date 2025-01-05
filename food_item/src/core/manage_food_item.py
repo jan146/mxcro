@@ -35,21 +35,24 @@ def get_nutrition_facts(query: str) -> FoodItem | tuple[int, str]:
     headers: dict[str, str] = {
         "X-Api-Key": api_key,
     }
-    response: Response = requests.get(url, params=params, headers=headers)
-    if response.ok:
-        try:
-            content: dict[str, Any] = json.loads(response.content.decode(RESPONSE_ENCODING))
-        except Exception as e:
-            return response.status_code, f"Failed to convert response to JSON: {str(e)}"
-        if len(content["items"]) < 1:
-            return 204, response.text
-        try:
-            food_item: FoodItem = FoodItemConverter.to_entity(content["items"][0])
-            if not check_existing_records(food_item.name):
-                food_item.save()
-            return food_item
-        except KeyError as e:
-            raise Exception(f"Error: Failed to convert food item from API response: {str(e)}")
-    else:
-        return response.status_code, response.text
+    try:
+        response: Response = requests.get(url, params=params, headers=headers)
+        if response.ok:
+            try:
+                content: dict[str, Any] = json.loads(response.content.decode(RESPONSE_ENCODING))
+            except Exception as e:
+                return response.status_code, f"Failed to convert response to JSON: {str(e)}"
+            if len(content["items"]) < 1:
+                return 204, response.text
+            try:
+                food_item: FoodItem = FoodItemConverter.to_entity(content["items"][0])
+                if not check_existing_records(food_item.name):
+                    food_item.save()
+                return food_item
+            except KeyError as e:
+                raise Exception(f"Error: Failed to convert food item from API response: {str(e)}")
+        else:
+            return response.status_code, response.text
+    except Exception as e:
+        return 500, str(e)
 
