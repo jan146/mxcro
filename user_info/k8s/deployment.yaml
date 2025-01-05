@@ -93,18 +93,3 @@ spec:
                 name: mxcro-secrets
                 key: MONGO_PASSWORD
 
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: mxcro-user-info-service
-spec:
-  selector:
-    app: mxcro
-    microservice: user_info
-  ports:
-    - port: 5000
-      targetPort: 5000
-  type: LoadBalancer
-
