@@ -3,7 +3,7 @@ from typing import Any, cast
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
-from mongoengine import connect
+from mongoengine import connect, get_connection
 from dotenv import load_dotenv
 from user_info.src.core.daily_rda import get_daily_rda
 from user_info.src.core.manage_user_info import create_user, delete_user, get_user_info, get_user_info_by_username
@@ -77,6 +77,19 @@ def daily_rda_for_user(id: str):
             daily_rda: dict[str, Any] = get_daily_rda(user_info)
             return jsonify(daily_rda), 200
     return jsonify({"error": f"Method not supported: {request.method}"}), 405
+
+@app.route("/api/v1/user_info/health/live", methods=["GET"])
+def liveness_probe():
+    return jsonify({"message": "Liveness probe successful"}), 200
+
+@app.route("/api/v1/user_info/health/ready", methods=["GET"])
+def readiness_probe():
+    # Check database availability
+    try:
+        get_connection().server_info()
+    except Exception as e:
+        return jsonify({"error": f"Database not available: {str(e)}"}), 503
+    return jsonify({"message": "Readiness probe successful"}), 200
 
 if __name__ == "__main__":
     environment: str = os.environ.get("ENVIRONMENT", "development").lower()
