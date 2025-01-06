@@ -1,6 +1,6 @@
 import os
 from typing import Any, cast
-from flask import Flask, jsonify, request
+from flask import jsonify, request
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect, get_connection
@@ -9,6 +9,10 @@ from user_info.src.core.daily_rda import get_daily_rda
 from user_info.src.core.manage_user_info import check_serverless, create_user, delete_user, get_user_info, get_user_info_by_username
 from user_info.src.models.converters.user_info_converter import UserInfoConverter
 from user_info.src.models.entities.user_info import UserInfo
+from flask_openapi3.openapi import OpenAPI
+from flask_openapi3.models.info import Info
+from flask_openapi3.models.tag import Tag
+from pydantic import BaseModel, Field
 
 load_dotenv()
 connect(
@@ -18,71 +22,185 @@ connect(
     username=os.environ["MONGO_USERNAME"],
     password=os.environ["MONGO_PASSWORD"],
 )
-app: Flask = Flask(__name__)
+info: Info = Info(title="User info microservice API", version="1.0.0")
+app: OpenAPI = OpenAPI(__name__, info=info, doc_prefix="/user_info/openapi")
 CORS(app)
 
-@app.route("/", methods=["GET"])
-@app.route("/api/v1", methods=["GET"])
+TAG_USER: Tag = Tag(name="User", description="Manage user")
+TAG_RDA: Tag = Tag(name="RDA", description="Daily RDA (recommended dietary allowance)")
+TAG_HEALTH: Tag = Tag(name="Health", description="Health checking probes")
+
+class HomeResponse(BaseModel):
+    message: str = Field("Hello, this is the root endpoint of logged_item", description="Greeting")
+
+class UserInfoPydantic(BaseModel):
+    id: str = Field("6770566535c6d727a838e434")
+    username: str = Field("janez")
+    age: int = Field(30)
+    height: float = Field(175.0)
+    weight: float = Field(70.0)
+    gender: str = Field("m")
+    activity_level: str = Field("moderate")
+
+class UserCreatedResponse(BaseModel):
+    message: str = Field("User successfully created", description="Success message")
+    user_info: UserInfoPydantic
+
+class UserCreatedResponseError(BaseModel):
+    error: str = Field("Failed to create user: ...", description="Error message")
+
+class UserNotFoundResponse(BaseModel):
+    error: str = Field("User not found", description="Error message")
+
+class DeleteUserResponse(BaseModel):
+    message: str = Field("User successfully deleted", description="Success message")
+    user_info: UserInfoPydantic
+
+class DailyRdaPydantic(BaseModel):
+    bmr: float = Field(1648.75, description="Basal metabolic rate")
+    tdee: float = Field(2555.5625, description="Total daily energy expenditure")
+    calories: float = Field(2555.5625, description="Daily calorie allowance")
+    fat_total: int = Field(85, description="Daily total fats allowance, in grams")
+    fat_saturated: int = Field(28, description="Daily saturated fats allowance, in grams")
+    carbohydrates: int = Field(287, description="Daily carbohydrates allowance, in grams")
+    fiber: int = Field(35, description="Daily fiber allowance, in grams")
+    sugar: int = Field(38, description="Daily sugar allowance, in grams")
+    protein: int = Field(159, description="Daily protein allowance, in grams")
+    potassium: int = Field(3400, description="Daily potassium allowance, in milligrams")
+    sodium: int = Field(2300, description="Daily sodium allowance, in milligrams")
+    cholesterol: int = Field(300, description="Daily cholesterol allowance, in milligrams")
+
+class LivenessResponse(BaseModel):
+    message: str = Field("Liveness probe successful", description="Success message")
+
+class ReadinessResponseOk(BaseModel):
+    message: str = Field("Readiness probe successful", description="Success message")
+
+class ReadinessResponseDatabase(BaseModel):
+    error: str = Field("Database not available: ...", description="Error message")
+
+class ReadinessResponseServerless(BaseModel):
+    error: str = Field("Error while executing serverless function: ...", description="Error message")
+
+class UserIdPath(BaseModel):
+    id: str = Field(..., description="Id of user")
+
+class UsernamePath(BaseModel):
+    username: str = Field(..., description="User's unique username")
+
+@app.get(
+    "/api/v1/",
+    responses={
+        200: HomeResponse,
+    },
+)
 def home():
-    return "Hello, this is the root endpoint of user_info"
+    return jsonify({"message": "Hello, this is the root endpoint of user_info"}), 200
 
-@app.route("/api/v1/user_info/", methods=["POST", "OPTIONS"])
-def user_info():
-    match request.method.lower():
-        case "options":
-            return jsonify({}), 200
-        case "post":
-            data: dict[str, str] = cast(dict[str, str], request.json)
-            try:
-                user: UserInfo = create_user(data)
-                return jsonify({"message": "User successfully created", "user_info": UserInfoConverter.to_dict(user)}), 200
-            except Exception as e:
-                return jsonify({"error": f"Failed to create user: {str(e)}"}), 400
-    return jsonify({"error": f"Method not supported: {request.method}"}), 405
+@app.post(
+    "/api/v1/user_info/",
+    tags=[TAG_USER],
+    summary="Create new user",
+    responses={
+        200: UserCreatedResponse,
+        400: UserCreatedResponseError,
+    },
+)
+def create_user_info():
+    if request.method.lower() == "options":     # For some reason, the content-type isn't set to application/json for the OPTIONS request
+        return jsonify({}), 200
+    data: dict[str, str] = cast(dict[str, str], request.json)
+    try:
+        user: UserInfo = create_user(data)
+        return jsonify({"message": "User successfully created", "user_info": UserInfoConverter.to_dict(user)}), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to create user: {str(e)}"}), 400
 
-@app.route("/api/v1/user_info/id/<id>", methods=["GET", "DELETE"])
-def user_info_by_id(id: str):
-    user_info: UserInfo | None = get_user_info(id)
+@app.get(
+    "/api/v1/user_info/id/<string:id>",
+    tags=[TAG_USER],
+    summary="Get user by id",
+    responses={
+        200: UserInfoPydantic,
+        404: UserNotFoundResponse,
+    },
+)
+def get_user(path: UserIdPath):
+    user_info: UserInfo | None = get_user_info(path.id)
     if user_info is None:
         return jsonify({"error": "User not found"}), 404
-    match request.method.lower():
-        case "options":
-            return jsonify({}), 200
-        case "delete":
-            user_dict: dict[str, Any] = UserInfoConverter.to_dict(user_info)
-            delete_user(user_info)
-            return jsonify({"message": "User successfully deleted", "user_info": user_dict}), 200
-        case "get":
-            return jsonify(UserInfoConverter.to_dict(user_info)), 200
-    return jsonify({"error": f"Method not supported: {request.method}"}), 405
+    return jsonify(UserInfoConverter.to_dict(user_info)), 200
 
-@app.route("/api/v1/user_info/username/<username>", methods=["GET"])
-def user_info_by_username(username: str):
-    match request.method.lower():
-        case "get":
-            user_info: UserInfo | None = get_user_info_by_username(username)
-            if user_info:
-                return jsonify(UserInfoConverter.to_dict(user_info)), 200
-            else:
-                return jsonify({"error": "User not found"}), 404
-    return jsonify({"error": f"Method not supported: {request.method}"}), 405
+@app.delete(
+    "/api/v1/user_info/id/<string:id>",
+    tags=[TAG_USER],
+    summary="Delete user by id",
+    responses={
+        200: DeleteUserResponse,
+        404: UserNotFoundResponse,
+    },
+)
+def delete_user_info(path: UserIdPath):
+    user_info: UserInfo | None = get_user_info(path.id)
+    if user_info is None:
+        return jsonify({"error": "User not found"}), 404
+    user_dict: dict[str, Any] = UserInfoConverter.to_dict(user_info)
+    delete_user(user_info)
+    return jsonify({"message": "User successfully deleted", "user_info": user_dict}), 200
 
-@app.route("/api/v1/user_info/daily_rda/<id>", methods=["GET"])
-def daily_rda_for_user(id: str):
-    match request.method.lower():
-        case "get":
-            user_info: UserInfo | None = get_user_info(id)
-            if user_info is None:
-                return jsonify({"error": "User not found"}), 404
-            daily_rda: dict[str, Any] = get_daily_rda(user_info)
-            return jsonify(daily_rda), 200
-    return jsonify({"error": f"Method not supported: {request.method}"}), 405
+@app.get(
+    "/api/v1/user_info/username/<string:username>",
+    tags=[TAG_USER],
+    summary="Get user by unique username",
+    responses={
+        200: UserInfoPydantic,
+        404: UserNotFoundResponse,
+    },
+)
+def user_info_by_username(path: UsernamePath):
+    user_info: UserInfo | None = get_user_info_by_username(path.username)
+    if user_info:
+        return jsonify(UserInfoConverter.to_dict(user_info)), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
 
-@app.route("/api/v1/user_info/health/live", methods=["GET"])
+@app.get(
+    "/api/v1/user_info/daily_rda/<string:id>",
+    tags=[TAG_RDA],
+    summary="Get user's daily RDA values",
+    responses={
+        200: DailyRdaPydantic,
+        404: UserNotFoundResponse,
+    },
+)
+def daily_rda_for_user(path: UserIdPath):
+    user_info: UserInfo | None = get_user_info(path.id)
+    if user_info is None:
+        return jsonify({"error": "User not found"}), 404
+    daily_rda: dict[str, Any] = get_daily_rda(user_info)
+    return jsonify(daily_rda), 200
+
+@app.get(
+    "/api/v1/logged_item/health/live",
+    tags=[TAG_HEALTH],
+    summary="Liveness probe",
+    responses={
+        200: LivenessResponse,
+    }
+)
 def user_info_liveness_probe():
     return jsonify({"message": "Liveness probe successful"}), 200
 
-@app.route("/api/v1/user_info/health/ready", methods=["GET"])
+@app.get(
+    "/api/v1/logged_item/health/ready",
+    tags=[TAG_HEALTH],
+    summary="Readiness probe",
+    responses={
+        200: ReadinessResponseOk,
+        503: ReadinessResponseDatabase,
+        504: ReadinessResponseServerless,
+    },
+)
 def user_info_readiness_probe():
     # Check database availability
     try:
