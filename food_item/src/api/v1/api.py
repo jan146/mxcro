@@ -24,6 +24,9 @@ info: Info = Info(title="Food item microservice API", version="1.0.0")
 app: OpenAPI = OpenAPI(__name__, info=info, doc_prefix="/food_item/openapi")
 CORS(app)
 
+TAG_QUERY: Tag = Tag(name="Query", description="Return nutrition facts about the given food")
+TAG_HEALTH: Tag = Tag(name="Health", description="Health checking probes")
+
 class QueryPath(BaseModel):
     query: str = Field(..., description="Query (food name)")
 
@@ -74,7 +77,7 @@ def home():
 
 @app.get(
     "/api/v1/food_item/<string:query>",
-    tags=[Tag(name="Query", description="Return nutrition facts about the given food")],
+    tags=[TAG_QUERY],
     responses={
         200: QueryResponse,
         204: None,
@@ -89,7 +92,7 @@ def food_item(path: QueryPath):
 
 @app.get(
     "/api/v1/food_item/health/live",
-    tags=[Tag(name="Health", description="Health checking probes")],
+    tags=[TAG_HEALTH],
     responses={
         200: LivenessResponse,
     }
@@ -99,7 +102,7 @@ def food_item_liveness_probe():
 
 @app.get(
     "/api/v1/food_item/health/ready",
-    tags=[Tag(name="Health", description="Health checking probes")],
+    tags=[TAG_HEALTH],
     responses={
         200: ReadinessResponseOk,
         503: ReadinessResponseDatabase,
