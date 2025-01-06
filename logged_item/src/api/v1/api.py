@@ -31,6 +31,7 @@ CORS(app)
 
 TAG_ITEM: Tag = Tag(name="Logged item", description="Manage logged items")
 TAG_USER: Tag = Tag(name="User", description="Manage logged items for specific user")
+TAG_HEALTH: Tag = Tag(name="Health", description="Health checking probes")
 
 class HomeResponse(BaseModel):
     message: str = Field("Hello, this is the root endpoint of logged_item", description="Greeting")
@@ -173,7 +174,7 @@ def delete_logged_item_from_user(path: ManageUserPath):
 
 @app.get(
     "/api/v1/logged_item/health/live",
-    tags=[Tag(name="Health", description="Health checking probes")],
+    tags=[TAG_HEALTH],
     summary="Liveness probe",
     responses={
         200: LivenessResponse,
@@ -184,7 +185,7 @@ def logged_item_liveness_probe():
 
 @app.get(
     "/api/v1/logged_item/health/ready",
-    tags=[Tag(name="Health", description="Health checking probes")],
+    tags=[TAG_HEALTH],
     summary="Readiness probe",
     responses={
         200: ReadinessResponseOk,
