@@ -30,7 +30,7 @@ TAG_HEALTH: Tag = Tag(name="Health", description="Health checking probes")
 class QueryPath(BaseModel):
     query: str = Field(..., description="Query (food name)")
 
-class FoodItemResponse(BaseModel):
+class FoodItemPydantic(BaseModel):
     id: str = Field("677ab2484ec48c1511323964", description="ID of specified food item")
     name: str = Field("banana", description="Name of the queried food item")
     weight_g: float = Field(100.0, description="Serving size (returned nutrient values are based on this value)")
@@ -46,7 +46,7 @@ class FoodItemResponse(BaseModel):
     sodium: float = Field(1.0, description="Total amout of sodium in milligrams")
 
 class QueryResponse(BaseModel):
-    food_item: FoodItemResponse
+    food_item: FoodItemPydantic
 
 class QueryResponseError(BaseModel):
     error: str = Field("HTTPSConnectionPool(host='api.calorieninjas.com', port=443): Max retries exceeded with url: ...")
