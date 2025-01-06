@@ -181,7 +181,7 @@ def daily_rda_for_user(path: UserIdPath):
     return jsonify(daily_rda), 200
 
 @app.get(
-    "/api/v1/logged_item/health/live",
+    "/api/v1/user_info/health/live",
     tags=[TAG_HEALTH],
     summary="Liveness probe",
     responses={
@@ -192,7 +192,7 @@ def user_info_liveness_probe():
     return jsonify({"message": "Liveness probe successful"}), 200
 
 @app.get(
-    "/api/v1/logged_item/health/ready",
+    "/api/v1/user_info/health/ready",
     tags=[TAG_HEALTH],
     summary="Readiness probe",
     responses={
