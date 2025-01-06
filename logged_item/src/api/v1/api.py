@@ -99,6 +99,7 @@ def home():
 @app.delete(
     "/api/v1/logged_item/<string:id>",
     tags=[TAG_ITEM],
+    summary="Delete a single logged item",
     responses={
         200: DeleteItemResponse,
     },
@@ -110,6 +111,7 @@ def manage_logged_item(path: ManageItemPath):
 @app.get(
     "/api/v1/logged_item/user/<string:user_id>",
     tags=[TAG_USER],
+    summary="Get all of user's logged items",
     responses={
         200: GetUserItemsResponse,
         400: GetUserItemsResponseError,
@@ -133,6 +135,7 @@ def get_user_logged_items(path: ManageUserPath):
 @app.post(
     "/api/v1/logged_item/user/<string:user_id>",
     tags=[TAG_USER],
+    summary="Add new item to user",
     responses={
         200: AddItemToUserResponse,
         400: AddItemToUserResponseError,
@@ -155,6 +158,7 @@ def add_logged_item_to_user(path: ManageUserPath):
 @app.delete(
     "/api/v1/logged_item/user/<user_id>",
     tags=[TAG_USER],
+    summary="Delete all user's logged items",
     responses={
         200: DeleteItemsFromUser,
         400: DeleteItemsFromUserError,
@@ -170,6 +174,7 @@ def delete_logged_item_from_user(path: ManageUserPath):
 @app.get(
     "/api/v1/logged_item/health/live",
     tags=[Tag(name="Health", description="Health checking probes")],
+    summary="Liveness probe",
     responses={
         200: LivenessResponse,
     }
@@ -180,6 +185,7 @@ def logged_item_liveness_probe():
 @app.get(
     "/api/v1/logged_item/health/ready",
     tags=[Tag(name="Health", description="Health checking probes")],
+    summary="Readiness probe",
     responses={
         200: ReadinessResponseOk,
         503: ReadinessResponseDatabase,

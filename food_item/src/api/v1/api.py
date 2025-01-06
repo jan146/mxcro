@@ -78,6 +78,7 @@ def home():
 @app.get(
     "/api/v1/food_item/<string:query>",
     tags=[TAG_QUERY],
+    summary="Get nutrition facts about the given food item",
     responses={
         200: QueryResponse,
         204: None,
@@ -93,6 +94,7 @@ def food_item(path: QueryPath):
 @app.get(
     "/api/v1/food_item/health/live",
     tags=[TAG_HEALTH],
+    summary="Liveness probe",
     responses={
         200: LivenessResponse,
     }
@@ -103,6 +105,7 @@ def food_item_liveness_probe():
 @app.get(
     "/api/v1/food_item/health/ready",
     tags=[TAG_HEALTH],
+    summary="Readiness probe",
     responses={
         200: ReadinessResponseOk,
         503: ReadinessResponseDatabase,
