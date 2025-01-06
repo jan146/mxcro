@@ -89,6 +89,7 @@ def food_item(path: QueryPath):
 
 @app.get(
     "/api/v1/food_item/health/live",
+    tags=[Tag(name="Health", description="Health checking probes")],
     responses={
         200: LivenessResponse,
     }
@@ -98,6 +99,7 @@ def food_item_liveness_probe():
 
 @app.get(
     "/api/v1/food_item/health/ready",
+    tags=[Tag(name="Health", description="Health checking probes")],
     responses={
         200: ReadinessResponseOk,
         503: ReadinessResponseDatabase,
