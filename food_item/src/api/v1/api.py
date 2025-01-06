@@ -8,7 +8,9 @@ from food_item.src.core.manage_food_item import check_calorie_ninjas_api_status,
 from food_item.src.models.converters.food_item_converter import FoodItemConverter
 from food_item.src.models.entities.food_item import FoodItem
 from pydantic import BaseModel, Field
-from flask_openapi3 import Tag, Info, OpenAPI
+from flask_openapi3.openapi import OpenAPI
+from flask_openapi3.models.info import Info
+from flask_openapi3.models.tag import Tag
 
 load_dotenv()
 connect(
