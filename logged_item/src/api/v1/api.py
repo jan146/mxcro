@@ -88,6 +88,10 @@ class ManageItemPath(BaseModel):
 class ManageUserPath(BaseModel):
     user_id: str = Field(..., description="Id of user")
 
+class LoggedItemBody(BaseModel):
+    food_name: str = Field("Apple", description="Name of the food")
+    weight: float = Field(100.0, description="Weight in grams")
+
 @app.get(
     "/api/v1/",
     responses={
@@ -142,8 +146,8 @@ def get_user_logged_items(path: ManageUserPath):
         400: AddItemToUserResponseError,
     },
 )
-def add_logged_item_to_user(path: ManageUserPath):
-    data: dict[str, str] = cast(dict[str, str], request.json)
+def add_logged_item_to_user(path: ManageUserPath, body: LoggedItemBody):
+    data: dict[str, str] = cast(dict[str, str], body.model_dump())
     date_str: str | None = request.args.get("date")
     date: datetime.date = datetime.date.today()
     if date_str:

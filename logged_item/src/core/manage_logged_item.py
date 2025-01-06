@@ -16,15 +16,15 @@ load_dotenv()
 def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) -> LoggedItem | None:
     
     # Parse request body
-    food_name: str = data.get("food_name", "").strip()
-    weight_str: str = data.get("weight", "").strip()
+    food_name: str = str(data.get("food_name", "")).strip()
+    weight_str: str = str(data.get("weight", "")).strip()
     if not food_name:
         raise Exception("Food name cannot be empty")
     if not weight_str:
         raise Exception("Weight cannot be empty")
     weight: int = 0
     try:
-        weight = int(weight_str)
+        weight = int(float(weight_str))
     except ValueError:
         raise Exception("Failed to cast weight to number")
     
