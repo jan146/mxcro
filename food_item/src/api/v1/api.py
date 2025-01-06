@@ -21,7 +21,7 @@ connect(
     password=os.environ["MONGO_PASSWORD"],
 )
 info: Info = Info(title="Food item microservice API", version="1.0.0")
-app: OpenAPI = OpenAPI(__name__, info=info)
+app: OpenAPI = OpenAPI(__name__, info=info, doc_prefix="/food_item/openapi")
 CORS(app)
 
 class QueryPath(BaseModel):
