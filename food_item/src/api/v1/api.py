@@ -74,7 +74,7 @@ def home():
 
 @app.get(
     "/api/v1/food_item/<string:query>",
-    tags=[Tag(name="Query", description="Food name")],
+    tags=[Tag(name="Query", description="Return nutrition facts about the given food")],
     responses={
         200: QueryResponse,
         204: None,
