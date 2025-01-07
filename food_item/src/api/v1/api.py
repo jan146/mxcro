@@ -19,6 +19,7 @@ connect(
     port=int(os.environ["MONGO_PORT"]),
     username=os.environ["MONGO_USERNAME"],
     password=os.environ["MONGO_PASSWORD"],
+    uuidRepresentation="standard",
 )
 info: Info = Info(title="Food item microservice API", version="1.0.0")
 app: OpenAPI = OpenAPI(__name__, info=info, doc_prefix="/food_item/openapi")
