@@ -49,6 +49,8 @@ def delete_user(user: UserInfo):
     return user.delete()
 
 def create_user(data: dict[str, str]) -> UserInfo:
+    if UserInfo.objects(username=data.get("username", "")):
+        raise Exception(f"Failed to create user: username \"{data.get('username', '')}\" is already taken")
     user: UserInfo = UserInfoConverter.to_entity(data)
     user.save()
     return user
