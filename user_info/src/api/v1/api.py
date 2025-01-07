@@ -106,10 +106,10 @@ def home():
         400: UserCreatedResponseError,
     },
 )
-def create_user_info():
+def create_user_info(body: UserInfoPydantic):
     if request.method.lower() == "options":     # For some reason, the content-type isn't set to application/json for the OPTIONS request
         return jsonify({}), 200
-    data: dict[str, str] = cast(dict[str, str], request.json)
+    data: dict[str, str] = cast(dict[str, str], body.model_dump())
     try:
         user: UserInfo = create_user(data)
         return jsonify({"message": "User successfully created", "user_info": UserInfoConverter.to_dict(user)}), 200
