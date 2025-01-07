@@ -1,3 +1,6 @@
+# Tmux setup is nicer with FE repo as subdirectory
+mxcro-frontend/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
