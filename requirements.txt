@@ -5,3 +5,4 @@ mongoengine
 python-dotenv
 flask-cors
 flask-openapi3[swagger]
+pytest
