@@ -34,7 +34,6 @@ def database():
 
 @pytest.fixture
 def client() -> FlaskClient:
-    app.config["TESTING"] = True
     client: FlaskClient = app.test_client()
     return client
 
