@@ -42,6 +42,7 @@ def test_query(client: FlaskClient, database: Database):
     query: str = "apple"
     # Get response from API
     resp = client.get(f"/api/v1/food_item/{query}")
+    assert resp.json is not None
     # Check if required keys are present
     required_keys: set[str] = {
         "calories",
