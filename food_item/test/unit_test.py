@@ -37,7 +37,7 @@ def client() -> FlaskClient:
     client: FlaskClient = app.test_client()
     return client
 
-def test_query(client: FlaskClient, database: Database):
+def test_query_valid(client: FlaskClient, database: Database):
     # Prepare request
     query: str = "apple"
     # Get response from API
@@ -63,4 +63,14 @@ def test_query(client: FlaskClient, database: Database):
     assert required_keys.issubset(returned_keys)
     # Check if returned name matches queried name
     assert resp.json["food_item"]["name"] == query
+
+def test_query_invalid(client: FlaskClient, database: Database):
+    # Prepare request
+    query: str = "this_is_not_a_valid_food_name"
+    # Get response from API
+    resp = client.get(f"/api/v1/food_item/{query}")
+    assert resp.json is not None
+    # Check if response has error
+    assert resp.json["error"]
+    assert resp.status_code == 404
 
