@@ -1,5 +1,5 @@
 from flask.testing import FlaskClient
-from ..src.api.v1.api import app
+from food_item.src.api.v1.api import app
 import pytest
 from pymongo.synchronous.database import Database
 from pymongo.synchronous.mongo_client import MongoClient
