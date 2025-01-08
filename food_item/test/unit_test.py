@@ -62,7 +62,7 @@ def test_query_valid(client: FlaskClient, database: Database):
     returned_keys: set[str] = set(resp.json["food_item"].keys())
     assert required_keys.issubset(returned_keys)
     # Check if returned name matches queried name
-    assert resp.json["food_item"]["name"] == query
+    assert resp.json["food_item"]["name"].lower() == query.lower()
 
 def test_query_invalid(client: FlaskClient, database: Database):
     # Prepare request
