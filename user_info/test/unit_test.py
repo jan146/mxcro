@@ -7,6 +7,7 @@ from pymongo.synchronous.mongo_client import MongoClient
 from mongoengine import disconnect_all, connect
 from dotenv import load_dotenv
 import os
+from unittest import mock
 
 app.config["TESTING"] = True
 TEST_USER: dict[str, Any] = {
@@ -126,17 +127,26 @@ def test_user_deletion(client: FlaskClient, database: Database):
         assert resp.json[prop] == value
     assert resp.json["id"] == user_id
 
-    # Delete user
-    resp = client.delete(f"/api/v1/user_info/id/{user_id}")
-    assert resp.json is not None
-    # Check if response matches sent data
-    check_user_match(sent_user=new_user, response_data=resp.json)
+    # Mocking the requests.delete to simulate deleting logged_item entities
+    with mock.patch("requests.delete") as mock_delete:
+        # Delete user
+        # Simulate a successful deletion response from the logged_item service
+        mock_delete.return_value.status_code = 200
+        mock_delete.return_value.json.return_value = {"message": f"Successfully deleted logged item with id ..."}
+        # Send the DELETE request to the user service
+        resp = client.delete(f"/api/v1/user_info/id/{user_id}")
+        assert resp.json is not None
+        # Check that the response is successful
+        assert resp.status_code == 200
+        assert resp.json["message"]
+        # Verify that the mock delete was called with the correct URL
+        mock_delete.assert_called_once_with(f"{os.environ['BACKEND_URL']}/api/v1/logged_item/user/{user_id}")
 
-    # Try to re-delete user (it should be non-existent at this point)
-    resp = client.delete(f"/api/v1/user_info/id/{user_id}")
-    assert resp.json is not None
-    assert resp.json["error"]
-    assert resp.status_code == 404
+        # Try to re-delete user (it should be non-existent at this point)
+        resp = client.delete(f"/api/v1/user_info/id/{user_id}")
+        assert resp.json is not None
+        assert resp.json["error"]
+        assert resp.status_code == 404
 
     # Try to fetch the non-existent user by id
     resp = client.get(f"/api/v1/user_info/id/{user_id}")
