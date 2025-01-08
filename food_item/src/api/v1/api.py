@@ -87,10 +87,10 @@ def home():
     }
 )
 def food_item(path: QueryPath):
-    result: FoodItem | tuple[int, str] = get_nutrition_facts(path.query)
+    result: FoodItem | tuple[str, int] = get_nutrition_facts(path.query)
     if isinstance(result, FoodItem):
         return jsonify({"food_item": FoodItemConverter.to_dict(result)}), 200
-    return jsonify({"error": result[1]}), 500
+    return jsonify({"error": result[0]}), result[1]
 
 @app.get(
     "/api/v1/food_item/health/live",

@@ -23,7 +23,7 @@ def check_calorie_ninjas_api_status():
     except Exception as e:
         raise Exception(f"Timeout reached when reaching Calorie Ninjas API {str(e)}")
 
-def get_nutrition_facts(query: str) -> FoodItem | tuple[int, str]:
+def get_nutrition_facts(query: str) -> FoodItem | tuple[str, int]:
     cached_record: FoodItem | None = check_existing_records(query)
     if cached_record:
         return cached_record
@@ -41,18 +41,18 @@ def get_nutrition_facts(query: str) -> FoodItem | tuple[int, str]:
             try:
                 content: dict[str, Any] = json.loads(response.content.decode(RESPONSE_ENCODING))
             except Exception as e:
-                return response.status_code, f"Failed to convert response to JSON: {str(e)}"
+                return f"Failed to convert response to JSON: {str(e)}", 500
             if len(content["items"]) < 1:
-                return 204, response.text
+                return response.text, 404
             try:
                 food_item: FoodItem = FoodItemConverter.to_entity(content["items"][0])
                 if not check_existing_records(food_item.name):
                     food_item.save()
                 return food_item
             except KeyError as e:
-                raise Exception(f"Error: Failed to convert food item from API response: {str(e)}")
+                return f"Error: Failed to convert food item from API response: {str(e)}", 500
         else:
-            return response.status_code, response.text
+            return response.text, response.status_code
     except Exception as e:
-        return 500, str(e)
+        return str(e), 500
 
