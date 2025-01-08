@@ -49,6 +49,9 @@ class FoodItemPydantic(BaseModel):
 class QueryResponse(BaseModel):
     food_item: FoodItemPydantic
 
+class QueryResponseNotFound(BaseModel):
+    error: str = Field("{\"items\": []}")
+
 class QueryResponseError(BaseModel):
     error: str = Field("HTTPSConnectionPool(host='api.calorieninjas.com', port=443): Max retries exceeded with url: ...")
 
@@ -82,7 +85,7 @@ def home():
     summary="Get nutrition facts about the given food item",
     responses={
         200: QueryResponse,
-        204: None,
+        404: QueryResponseNotFound,
         500: QueryResponseError,
     }
 )
