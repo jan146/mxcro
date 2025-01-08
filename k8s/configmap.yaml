@@ -9,6 +9,7 @@ data:
   ENVIRONMENT: "production"
   BACKEND_URL: "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local"
   MONGO_DB_NAME: "mxcro"
+  MONGO_DB_TEST: "mxcro-test"
   MONGO_HOST: "mongodb+srv://db-mongodb-fra1-07259-dda8d04f.mongo.ondigitalocean.com"
   MONGO_PORT: "27017"
   MONGO_USERNAME: "doadmin"

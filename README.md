@@ -42,6 +42,7 @@ Required variables:
 - MONGO_HOST (host that MongoDB is running on, e.g. `localhost`)
 - MONGO_PORT (the port that MongoDB is listening on, e.g. `27017`)
 - MONGO_DB_NAME (name of database in MongoDB instance, e.g. `mxcro`)
+- MONGO_DB_TEST (name of database for testing in MongoDB instance, e.g. `mxcro-text`)
 - MONGO_USERNAME (set to MongoDB, e.g. `user`)
 - SERVERLESS_NAMESPACE_URL (the url of the namespace with required serverless functions, e.g. `https://faas-fra1-afec6ce7.doserverless.co/api/v1/namespaces/fn-1fe3ffab-d547-44e2-8b38-2158e175bae3`, see section "Serverless")
 - BACKEND_URL (the url that microservices will use to access each other's APIs, e.g. `http://localhost:5000`)
