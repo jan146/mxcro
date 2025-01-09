@@ -7,7 +7,7 @@ spec:
     app: mxcro
     microservice: food_item 
   ports:
-    - port: 5000
-      targetPort: 5000
-  type: LoadBalancer
+    - port: {{ .Values.portNumber }}
+      targetPort: {{ .Values.portNumber }}
+  type: {{ .Values.serviceType }}
 

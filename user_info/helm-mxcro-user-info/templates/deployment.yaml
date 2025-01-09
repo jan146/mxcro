@@ -10,8 +10,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 2
+      maxUnavailable: {{ .Values.maxUnavailable }}
+      maxSurge: {{ .Values.maxSurge }}
   selector:
     matchLabels:
       app: mxcro
@@ -30,7 +30,7 @@ spec:
         args: ["-m", "user_info.src.api.v1.api"]
         ports:
         - name: flask
-          containerPort: 5000
+          containerPort: {{ .Values.portNumber }}
         envFrom:
           - configMapRef:
               name: mxcro-config-map
@@ -39,14 +39,14 @@ spec:
         livenessProbe:
           httpGet:
             path: /api/v1/user_info/health/live
-            port: 5000
+            port: {{ .Values.portNumber }}
           initialDelaySeconds: 30
           periodSeconds: 3
           timeoutSeconds: 1
         readinessProbe:
           httpGet:
             path: /api/v1/user_info/health/ready
-            port: 5000 
+            port: {{ .Values.portNumber }} 
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 3

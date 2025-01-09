@@ -4,5 +4,8 @@
 
 replicaCount: 3
 imageTag: stable
-# imageTag: latest
+maxUnavailable: 1
+maxSurge: 2
+portNumber: 5000
+serviceType: LoadBalancer
 
