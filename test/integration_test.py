@@ -23,6 +23,15 @@ TEST_USER: dict[str, Any] = {
     "gender": "m",
     "activity_level": "moderate",
 }
+RESPONSES_METHODS: list[str] = [
+    responses.GET,
+    responses.POST,
+    responses.PUT,
+    responses.DELETE,
+    responses.PATCH,
+    responses.HEAD,
+    responses.OPTIONS,
+]
 load_dotenv()
 
 @pytest.fixture(scope="function")
@@ -137,21 +146,22 @@ def test_logged_item(
 ):
 
     # Add callbacks (intercept requests.*)
-    responses.add_callback(
-        method=responses.GET,
-        url=re.compile(r".*/api/v1/user_info/.*"),
-        callback=callback_factory(client_user_info),
-    )
-    responses.add_callback(
-        method=responses.GET,
-        url=re.compile(r".*/api/v1/food_item/.*"),
-        callback=callback_factory(client_food_item),
-    )
-    responses.add_callback(
-        method=responses.GET,
-        url=re.compile(r".*"),
-        callback=callback_factory(None),
-    )
+    for method in RESPONSES_METHODS:
+        responses.add_callback(
+            method=method,
+            url=re.compile(r".*/api/v1/user_info/.*"),
+            callback=callback_factory(client_user_info),
+        )
+        responses.add_callback(
+            method=method,
+            url=re.compile(r".*/api/v1/food_item/.*"),
+            callback=callback_factory(client_food_item),
+        )
+        responses.add_callback(
+            method=method,
+            url=re.compile(r".*"),
+            callback=callback_factory(None),
+        )
 
     # Add food item
     food_item_id: str = create_food_item(client_food_item, TEST_FOOD)
