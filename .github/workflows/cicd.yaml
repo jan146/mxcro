@@ -85,8 +85,8 @@ jobs:
          KUBECONFIG: ${{ github.workspace }}/kubeconfig
        run: |
          helm dependency build k8s/helm-mxcro-shared
-         helm install mxcro-shared k8s/helm-mxcro-shared
-         helm install mxcro-food-item food_item/helm-mxcro-food-item -f food_item/helm-mxcro-food-item/values.production.yaml
-         helm install mxcro-logged-item logged_item/helm-mxcro-logged-item -f logged_item/helm-mxcro-logged-item/values.production.yaml
-         helm install mxcro-user-info user_info/helm-mxcro-user-info -f user_info/helm-mxcro-user-info/values.production.yaml
+         helm upgrade --install mxcro-shared k8s/helm-mxcro-shared
+         helm upgrade --install mxcro-food-item food_item/helm-mxcro-food-item -f food_item/helm-mxcro-food-item/values.production.yaml
+         helm upgrade --install mxcro-logged-item logged_item/helm-mxcro-logged-item -f logged_item/helm-mxcro-logged-item/values.production.yaml
+         helm upgrade --install mxcro-user-info user_info/helm-mxcro-user-info -f user_info/helm-mxcro-user-info/values.production.yaml
 
