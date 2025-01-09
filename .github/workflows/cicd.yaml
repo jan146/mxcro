@@ -1,5 +1,5 @@
 name: Default CI/CD pipeline
-run-name: ${{ github.actor }} started workflow ${{ github.workflow }}, with run ID ${{ github.run_id }} 
+run-name: ${{ github.actor }} started workflow ${{ github.workflow }}, with run ID ${{ github.run_id }}
 
 on:
   push:
@@ -50,4 +50,21 @@ jobs:
       - name: Run user_info tests
         run: python -m pytest user_info/test/unit_test.py
       - run: echo "Job finished with status ${{ job.status }}."
+
+  publish-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ vars.DOCKER_USERNAME }}/mxcro:build-${{ github.run_id }}
+            ${{ vars.DOCKER_USERNAME }}/mxcro:latest
+
 
