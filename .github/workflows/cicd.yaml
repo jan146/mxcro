@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} started workflow ${{ github.workflow }}, with run 
 on:
   push:
     branches:
-      - main
+      - master
 jobs:
   unit-test:
     runs-on: ubuntu-latest
