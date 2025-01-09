@@ -1,3 +1,7 @@
+# Misc
+Chart.lock
+*.tgz
+
 # Tmux setup is nicer with FE repo as subdirectory
 mxcro-frontend/
 

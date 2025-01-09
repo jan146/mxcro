@@ -7,7 +7,7 @@ data:
   FLASK_HOST: "0.0.0.0"
   FLASK_PORT: "5000"
   ENVIRONMENT: "production"
-  BACKEND_URL: "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local"
+  BACKEND_URL: "http://mxcro-shared-ingress-nginx-controller.default.svc.cluster.local"
   MONGO_DB_NAME: "mxcro"
   MONGO_DB_TEST: "mxcro-test"
   MONGO_HOST: "mongodb+srv://db-mongodb-fra1-07259-dda8d04f.mongo.ondigitalocean.com"
