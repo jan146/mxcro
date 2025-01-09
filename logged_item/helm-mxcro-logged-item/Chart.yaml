@@ -1,0 +1,12 @@
+apiVersion: v2
+name: helm-mxcro-logged-item
+description: A Helm chart for mxcro's logged_item microservice
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - mxcro
+  - logged_item
+sources:
+  - https://github.com/jan146/mxcro/
+

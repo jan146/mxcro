@@ -6,7 +6,7 @@ metadata:
     app: mxcro
     microservice: food_item 
 spec:
-  replicas: 3
+  replicas: {{ .Values.replicaCount }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: mxcro-food-item
-        image: jan146/mxcro:stable
+        image: jan146/mxcro:{{ .Values.imageTag }}
         imagePullPolicy: Always
         command: ["python"]
         args: ["-m", "food_item.src.api.v1.api"]

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: helm-mxcro-user-info
+description: A Helm chart for mxcro's user_info microservice
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - mxcro
+  - user_info
+sources:
+  - https://github.com/jan146/mxcro/
+

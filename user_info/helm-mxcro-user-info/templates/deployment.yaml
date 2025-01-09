@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mxcro-logged-item-deployment
+  name: mxcro-user-info-deployment
   labels:
     app: mxcro
-    microservice: logged_item
+    microservice: user_info
 spec:
-  replicas: 3
+  replicas: {{ .Values.replicaCount }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -15,19 +15,19 @@ spec:
   selector:
     matchLabels:
       app: mxcro
-      microservice: logged_item
+      microservice: user_info
   template:
     metadata:
       labels:
         app: mxcro
-        microservice: logged_item
+        microservice: user_info
     spec:
       containers:
-      - name: mxcro-logged-item
-        image: jan146/mxcro:stable
+      - name: mxcro-user-info
+        image: jan146/mxcro:{{ .Values.imageTag }}
         imagePullPolicy: Always
         command: ["python"]
-        args: ["-m", "logged_item.src.api.v1.api"]
+        args: ["-m", "user_info.src.api.v1.api"]
         ports:
         - name: flask
           containerPort: 5000
@@ -38,15 +38,15 @@ spec:
               name: mxcro-secrets
         livenessProbe:
           httpGet:
-            path: /api/v1/logged_item/health/live
+            path: /api/v1/user_info/health/live
             port: 5000
           initialDelaySeconds: 30
           periodSeconds: 3
           timeoutSeconds: 1
         readinessProbe:
           httpGet:
-            path: /api/v1/logged_item/health/ready
-            port: 5000
+            path: /api/v1/user_info/health/ready
+            port: 5000 
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 3
