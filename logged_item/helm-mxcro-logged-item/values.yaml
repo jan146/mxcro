@@ -6,4 +6,6 @@ replicaCount: 2
 imageTag: latest
 maxUnavailable: 1
 maxSurge: 1
+portNumber: 5000
+serviceType: LoadBalancer
 
