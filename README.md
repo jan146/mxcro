@@ -58,8 +58,8 @@ The necessary functions (modules) are available at `serverless/*`.
 
 # How to run (Kubernetes)
 
-## ConfigMap
-Configuration options may be changed by editing `k8s/configmap.yaml`.
+## Environment variables
+Configuration options may be changed by editing `k8s/helm-mxcro-shared/templates/configmap.yaml`.
 For descriptions, see required variables under "Environment setup" subsection of the "How to run (local)" section.
 
 ## Secrets
@@ -72,16 +72,14 @@ kubectl create secret generic mxcro-secrets \
   --from-literal=MONGO_PASSWORD="paste-mongo-password-here"
 ```
 
-## Adding Nginx ingress controller ([source](https://www.digitalocean.com/community/developer-center/how-to-install-and-configure-ingress-controller-using-nginx))
-```bash
-# Find chart in repository
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update ingress-nginx
-helm search repo ingress-nginx
+## Adding deployments & services using helm
+```sh
+# Satisfy dependencies (only for mxcro-shared chart (which is only ingress-nginx))
+helm dependency build k8s/helm-mxcro-shared
 
-# Install the chart
-helm install ingress-nginx ingress-nginx/ingress-nginx --version "4.1.3" \
-  --namespace ingress-nginx \
-  --create-namespace \
-  -f "k8s/nginx-values-v4.1.3.yaml"
+# Install mxcro-shared chart
+helm install mxcro-shared k8s/helm-mxcro-shared
+
+# Add the k8s ojbects for logged_item microservice (analogous for other microservices)
+helm install mxcro-logged-item logged_item/helm-mxcro-logged-item # Optionally add -f logged_item/helm-mxcro-logged-item/values.production.yaml
 ```
