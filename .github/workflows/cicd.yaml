@@ -1,14 +1,17 @@
 name: Default CI/CD pipeline
 run-name: ${{ github.actor }} started workflow ${{ github.workflow }}, with run ID ${{ github.run_id }} 
+
 on:
   push:
     branches:
       - master
   
 jobs:
+
   unit-test:
     runs-on: ubuntu-latest
     env:
+      # Default env vars
       FLASK_DEBUG: True
       FLASK_HOST: 127.0.0.1
       FLASK_PORT: 5000
@@ -20,12 +23,10 @@ jobs:
       MONGO_USERNAME: root
       MONGO_PASSWORD: example
       BACKEND_URL: http://127.0.0.1:5000
-      SERVERLESS_NAMESPACE_URL: "https://faas-fra1-afec6ce7.doserverless.co/api/v1/namespaces/fn-1fe3ffab-d547-44e2-8b38-2158e175bae3"
-      
+      # Secrets
+      SERVERLESS_NAMESPACE_URL: ${{ secrets.SERVERLESS_NAMESPACE_URL }}
       CALORIE_NINJAS_API_KEY: ${{ secrets.CALORIE_NINJAS_API_KEY }}
       SERVERLESS_AUTH: ${{ secrets.SERVERLESS_AUTH }}
-      # MONGO_HOST="mongodb+srv://db-mongodb-fra1-07259-dda8d04f.mongo.ondigitalocean.com"
-
     services:
       mongodb:
         image: mongo:latest
@@ -34,7 +35,6 @@ jobs:
           MONGO_INITDB_ROOT_PASSWORD: example
         ports:
           - 27017:27017
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
