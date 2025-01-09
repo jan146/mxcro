@@ -69,4 +69,26 @@ jobs:
             ${{ vars.DOCKER_USERNAME }}/mxcro:build-${{ github.run_id }}
             ${{ vars.DOCKER_USERNAME }}/mxcro:latest
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: publish-image
+    steps:
+     - uses: actions/checkout@v4
+     - uses: azure/setup-kubectl@v4
+       with:
+          version: "latest"
+       id: install
+     - uses: azure/setup-helm@v4.2.0
+       with:
+          version: "latest"
+       id: install
+     - run: echo "${{ secrets.KUBECONFIG }}" > ${{ github.workspace }}/kubeconfig
+     - env:
+         KUBECONFIG: ${{ github.workspace }}/kubeconfig
+       run: |
+         helm dependency build k8s/helm-mxcro-shared
+         helm install mxcro-shared k8s/helm-mxcro-shared
+         helm install mxcro-food-item food_item/helm-mxcro-food-item -f food_item/helm-mxcro-food-item/values.production.yaml
+         helm install mxcro-logged-item logged_item/helm-mxcro-logged-item -f logged_item/helm-mxcro-logged-item/values.production.yaml
+         helm install mxcro-user-info user_info/helm-mxcro-user-info -f user_info/helm-mxcro-user-info/values.production.yaml
 
