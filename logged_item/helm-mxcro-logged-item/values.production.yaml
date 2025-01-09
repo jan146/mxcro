@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-# imageTag: stable
-imageTag: latest
+replicaCount: 3
+imageTag: stable
+# imageTag: latest
 
