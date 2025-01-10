@@ -23,6 +23,10 @@ TEST_USER: dict[str, Any] = {
     "gender": "m",
     "activity_level": "moderate",
 }
+TEST_LOGGED_ITEM: dict[str, Any] = {
+    "food_name": TEST_FOOD,
+    "weight": 100.0,
+}
 RESPONSES_METHODS: list[str] = [
     responses.GET,
     responses.POST,
@@ -177,6 +181,7 @@ def create_user_info(client: FlaskClient, user: dict[str, Any]) -> str:
     return resp.json["user_info"]["id"]
 
 def logged_item_add(
+    logged_item: dict[str, Any],
     client_food_item: FlaskClient,
     client_logged_item: FlaskClient,
     client_user_info: FlaskClient,
@@ -186,11 +191,6 @@ def logged_item_add(
     food_item_id: str = create_food_item(client_food_item, TEST_FOOD)
     # Add user
     user_id: str = create_user_info(client_user_info, TEST_USER)
-    # Prepare input data
-    logged_item: dict[str, Any] = {
-        "food_name": TEST_FOOD,
-        "weight": 100.0,
-    }
 
     # Add logged item (add food item to user)
     resp = client_logged_item.post(f"/api/v1/logged_item/user/{user_id}", json=logged_item)
@@ -210,5 +210,5 @@ def test_logged_item_add(
     database: Database,
 ):
     # Adds food item, user and logged item corresponding to those two
-    logged_item_add(*clients)
+    logged_item_add(TEST_LOGGED_ITEM, *clients)
 
