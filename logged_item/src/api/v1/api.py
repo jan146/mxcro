@@ -137,9 +137,13 @@ def get_item(path: ManageItemPath):
     summary="Delete a single logged item",
     responses={
         200: DeleteItemResponse,
+        404: ItemNotFoundResponse,
     },
 )
 def delete_item(path: ManageItemPath):
+    logged_item: LoggedItem | None = get_logged_item(path.id)
+    if logged_item is None:
+        return jsonify({"error": "Item not found"}), 404
     delete_logged_item(path.id)
     return jsonify({"message": f"Successfully deleted logged item with id {path.id}"}), 200
 
