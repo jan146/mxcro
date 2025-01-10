@@ -163,16 +163,11 @@ def create_user_info(client: FlaskClient, user: dict[str, Any]) -> str:
     # Return id
     return resp.json["user_info"]["id"]
 
-@responses.activate
-def test_logged_item(
+def logged_item_add(
     client_food_item: FlaskClient,
     client_logged_item: FlaskClient,
     client_user_info: FlaskClient,
-    database: Database,
-):
-
-    # Add callbacks (intercept requests.*)
-    prepare_interception(client_food_item, client_logged_item, client_user_info)
+) -> tuple[str, str, str]:
 
     # Add food item
     food_item_id: str = create_food_item(client_food_item, TEST_FOOD)
@@ -192,4 +187,25 @@ def test_logged_item(
     # Check if returned item matches input data
     assert resp.json["logged_item"]["food_item_id"] == food_item_id
     assert resp.json["logged_item"]["user_id"] == user_id
+    # Check for id presence
+    assert resp.json["logged_item"]["id"]
+    return (food_item_id, resp.json["logged_item"]["id"], user_id)
+
+@responses.activate
+def test_logged_item_add(
+    client_food_item: FlaskClient,
+    client_logged_item: FlaskClient,
+    client_user_info: FlaskClient,
+    database: Database,
+):
+
+    # Add callbacks (intercept requests.*)
+    prepare_interception(client_food_item, client_logged_item, client_user_info)
+
+    # Adds food item, user and logged item corresponding to those two
+    logged_item_add(
+        client_food_item,
+        client_logged_item,
+        client_user_info,
+    )
 
