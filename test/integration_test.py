@@ -239,3 +239,28 @@ def test_logged_item_get(
     # Get that same logged item and check that it matches the sent data
     logged_item_get(clients, food_item_id, logged_item_id, user_id)
 
+@responses.activate
+def test_logged_item_delete(
+    clients: tuple[FlaskClient, FlaskClient, FlaskClient],
+    database: Database,
+):
+    # Adds food item, user and logged item corresponding to those two
+    food_item_id, logged_item_id, user_id = logged_item_add(TEST_LOGGED_ITEM, *clients)
+
+    # Get the logged item
+    logged_item_get(clients, food_item_id, logged_item_id, user_id)
+
+    # Delete item
+    client_logged_item: FlaskClient = clients[1]
+    resp = client_logged_item.delete(f"/api/v1/logged_item/{logged_item_id}")
+    assert resp.json is not None
+    # Check for success message
+    assert resp.json["message"]
+
+    # Delete item again (it shouldn't exist at this point)
+    resp = client_logged_item.delete(f"/api/v1/logged_item/{logged_item_id}")
+    assert resp.json is not None
+    # Check for error message
+    assert resp.json["error"]
+    assert resp.status_code == 404
+
