@@ -212,3 +212,30 @@ def test_logged_item_add(
     # Adds food item, user and logged item corresponding to those two
     logged_item_add(TEST_LOGGED_ITEM, *clients)
 
+def logged_item_get(
+    clients: tuple[FlaskClient, FlaskClient, FlaskClient],
+    food_item_id: str,
+    logged_item_id: str,
+    user_id: str,
+):
+    client_logged_item: FlaskClient = clients[1]
+    resp = client_logged_item.get(f"/api/v1/logged_item/{logged_item_id}")
+    assert resp.json is not None
+    # Check for success message
+    assert resp.json["message"]
+    # Check if returned ids match
+    assert resp.json["logged_item"]["food_item_id"] == food_item_id
+    assert resp.json["logged_item"]["id"] == logged_item_id
+    assert resp.json["logged_item"]["user_id"] == user_id
+
+@responses.activate
+def test_logged_item_get(
+    clients: tuple[FlaskClient, FlaskClient, FlaskClient],
+    database: Database,
+):
+    # Adds food item, user and logged item corresponding to those two
+    food_item_id, logged_item_id, user_id = logged_item_add(TEST_LOGGED_ITEM, *clients)
+
+    # Get that same logged item and check that it matches the sent data
+    logged_item_get(clients, food_item_id, logged_item_id, user_id)
+
