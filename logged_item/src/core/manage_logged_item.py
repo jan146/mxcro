@@ -13,6 +13,10 @@ RESPONSE_ENCODING: str = "utf-8"
 
 load_dotenv()
 
+def get_logged_item(id: str) -> LoggedItem | None:
+    result: list[LoggedItem] = list(LoggedItem.objects(pk=ObjectId(id)))
+    return result[0] if result else None
+
 def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) -> LoggedItem | None:
     
     # Parse request body

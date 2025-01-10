@@ -5,7 +5,7 @@ from gevent.pywsgi import WSGIServer
 from mongoengine import connect, get_connection
 from dotenv import load_dotenv
 from typing import Any, cast
-from logged_item.src.core.manage_logged_item import add_item_to_user, delete_logged_item, delete_logged_items_for_user, get_logged_items
+from logged_item.src.core.manage_logged_item import add_item_to_user, delete_logged_item, delete_logged_items_for_user, get_logged_item, get_logged_items
 from logged_item.src.models.converters.logged_item_converter import LoggedItemConverter
 from logged_item.src.models.entities.logged_item import LoggedItem
 import datetime
@@ -46,10 +46,24 @@ class ReadinessResponseOk(BaseModel):
 class ReadinessResponseDatabase(BaseModel):
     error: str = Field("Database not available: ...", description="Error message")
 
+class LoggedItemPydantic(BaseModel):
+    id: str = Field("67793f2c4917570eb704a0eb")
+    timestamp: float = Field(1736509328.4)
+    quantity: float = Field(100.0)
+    user_id: str = Field("67793ecb4917570eb704a0e9")
+    food_item_id: str = Field("67793f2c4917570eb704a0ea")
+
+class GetItemResponse(BaseModel):
+    message: str = Field("Successfully found logged item with id ...", description="Success message")
+    logged_item: LoggedItemPydantic
+
+class ItemNotFoundResponse(BaseModel):
+    message: str = Field("Item not found", description="Error message")
+
 class DeleteItemResponse(BaseModel):
     message: str = Field("Successfully deleted logged item with id=...", description="Success message")
 
-class LoggedItemPydantic(BaseModel):
+class LoggedItemWithNutrientsPydantic(BaseModel):
     id: str = Field("677c01f8672293a1c0d3ba5e", description="ID of specified food item")
     name: str = Field("cheese", description="Name of the queried food item")
     weight_g: float = Field(100.0, description="Serving size (returned nutrient values are based on this value)")
@@ -65,14 +79,14 @@ class LoggedItemPydantic(BaseModel):
     sodium: float = Field(661.0, description="Total amout of sodium in milligrams")
 
 class GetUserItemsResponse(BaseModel):
-    logged_items: list[LoggedItemPydantic]
+    logged_items: list[LoggedItemWithNutrientsPydantic]
 
 class GetUserItemsResponseError(BaseModel):
     error: str = Field("Failed to get logged items: ...", description="Error message")
 
 class AddItemToUserResponse(BaseModel):
     message: str = Field("Successfully logged new item", description="Success message")
-    logged_item: LoggedItemPydantic
+    logged_item: LoggedItemWithNutrientsPydantic
 
 class AddItemToUserResponseError(BaseModel):
     error: str = Field("Failed to log item: ...", description="Error message")
@@ -102,6 +116,21 @@ class LoggedItemBody(BaseModel):
 def home():
     return jsonify({"message": "Hello, this is the root endpoint of logged_item"}), 200
 
+@app.get(
+    "/api/v1/logged_item/<string:id>",
+    tags=[TAG_ITEM],
+    summary="Get a specific logged item by id",
+    responses={
+        200: GetItemResponse,
+        404: ItemNotFoundResponse,
+    },
+)
+def get_item(path: ManageItemPath):
+    logged_item: LoggedItem | None = get_logged_item(path.id)
+    if logged_item is None:
+        return jsonify({"error": "Item not found"}), 404
+    return jsonify({"message": f"Successfully found logged item with id {path.id}", "logged_item": LoggedItemConverter.to_dict(logged_item)}), 200
+
 @app.delete(
     "/api/v1/logged_item/<string:id>",
     tags=[TAG_ITEM],
@@ -110,7 +139,7 @@ def home():
         200: DeleteItemResponse,
     },
 )
-def manage_logged_item(path: ManageItemPath):
+def delete_item(path: ManageItemPath):
     delete_logged_item(path.id)
     return jsonify({"message": f"Successfully deleted logged item with id {path.id}"}), 200
 
