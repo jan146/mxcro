@@ -101,6 +101,19 @@ def client_user_info() -> FlaskClient:
     client: FlaskClient = app_user_info.test_client()
     return client
 
+@pytest.fixture
+def clients() -> tuple[FlaskClient, FlaskClient, FlaskClient]:
+    for app in [app_food_item, app_logged_item, app_user_info]:
+        app.config["TESTING"] = True
+    clients: tuple[FlaskClient, FlaskClient, FlaskClient] = (
+        app_food_item.test_client(),
+        app_logged_item.test_client(),
+        app_user_info.test_client(),
+    )
+    # Add callbacks (intercept requests.*)
+    prepare_interception(*clients)
+    return clients
+
 # https://github.com/getsentry/responses?tab=readme-ov-file#responses-as-a-pytest-fixture
 def callback_factory(client: FlaskClient | None = None):
     def callback_flask(request: requests.models.PreparedRequest):
@@ -193,19 +206,9 @@ def logged_item_add(
 
 @responses.activate
 def test_logged_item_add(
-    client_food_item: FlaskClient,
-    client_logged_item: FlaskClient,
-    client_user_info: FlaskClient,
+    clients: tuple[FlaskClient, FlaskClient, FlaskClient],
     database: Database,
 ):
-
-    # Add callbacks (intercept requests.*)
-    prepare_interception(client_food_item, client_logged_item, client_user_info)
-
     # Adds food item, user and logged item corresponding to those two
-    logged_item_add(
-        client_food_item,
-        client_logged_item,
-        client_user_info,
-    )
+    logged_item_add(*clients)
 
