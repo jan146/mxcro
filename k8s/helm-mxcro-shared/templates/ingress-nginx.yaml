@@ -50,4 +50,11 @@ spec:
                 name: mxcro-user-info-service
                 port:
                   number: 5000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mxcro-frontend-service
+                port:
+                  number: 5173
 
