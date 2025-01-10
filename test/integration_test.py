@@ -34,6 +34,33 @@ RESPONSES_METHODS: list[str] = [
 ]
 load_dotenv()
 
+def prepare_interception(
+    client_food_item: FlaskClient,
+    client_logged_item: FlaskClient,
+    client_user_info: FlaskClient,
+):
+    for method in RESPONSES_METHODS:
+        responses.add_callback(
+            method=method,
+            url=re.compile(r".*/api/v1/food_item/.*"),
+            callback=callback_factory(client_food_item),
+        )
+        responses.add_callback(
+            method=method,
+            url=re.compile(r".*/api/v1/logged_item/.*"),
+            callback=callback_factory(client_logged_item),
+        )
+        responses.add_callback(
+            method=method,
+            url=re.compile(r".*/api/v1/user_info/.*"),
+            callback=callback_factory(client_user_info),
+        )
+        responses.add_callback(
+            method=method,
+            url=re.compile(r".*"),
+            callback=callback_factory(None),
+        )
+
 @pytest.fixture(scope="function")
 def database():
     # Close connection with prod DB
@@ -76,7 +103,6 @@ def client_user_info() -> FlaskClient:
 
 # https://github.com/getsentry/responses?tab=readme-ov-file#responses-as-a-pytest-fixture
 def callback_factory(client: FlaskClient | None = None):
-
     def callback_flask(request: requests.models.PreparedRequest):
         if client is None:
             return (500, {}, None)
@@ -146,22 +172,7 @@ def test_logged_item(
 ):
 
     # Add callbacks (intercept requests.*)
-    for method in RESPONSES_METHODS:
-        responses.add_callback(
-            method=method,
-            url=re.compile(r".*/api/v1/user_info/.*"),
-            callback=callback_factory(client_user_info),
-        )
-        responses.add_callback(
-            method=method,
-            url=re.compile(r".*/api/v1/food_item/.*"),
-            callback=callback_factory(client_food_item),
-        )
-        responses.add_callback(
-            method=method,
-            url=re.compile(r".*"),
-            callback=callback_factory(None),
-        )
+    prepare_interception(client_food_item, client_logged_item, client_user_info)
 
     # Add food item
     food_item_id: str = create_food_item(client_food_item, TEST_FOOD)
