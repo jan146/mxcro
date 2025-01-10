@@ -181,7 +181,6 @@ def create_user_info(client: FlaskClient, user: dict[str, Any]) -> str:
     return resp.json["user_info"]["id"]
 
 def logged_item_add(
-    logged_item: dict[str, Any],
     client_food_item: FlaskClient,
     client_logged_item: FlaskClient,
     client_user_info: FlaskClient,
@@ -193,7 +192,7 @@ def logged_item_add(
     user_id: str = create_user_info(client_user_info, TEST_USER)
 
     # Add logged item (add food item to user)
-    resp = client_logged_item.post(f"/api/v1/logged_item/user/{user_id}", json=logged_item)
+    resp = client_logged_item.post(f"/api/v1/logged_item/user/{user_id}", json=TEST_LOGGED_ITEM)
     assert resp.json is not None
     # Check if success message is present
     assert resp.json["message"]
@@ -210,7 +209,7 @@ def test_logged_item_add(
     database: Database,
 ):
     # Adds food item, user and logged item corresponding to those two
-    logged_item_add(TEST_LOGGED_ITEM, *clients)
+    logged_item_add(*clients)
 
 def logged_item_get(
     clients: tuple[FlaskClient, FlaskClient, FlaskClient],
@@ -234,7 +233,7 @@ def test_logged_item_get(
     database: Database,
 ):
     # Adds food item, user and logged item corresponding to those two
-    food_item_id, logged_item_id, user_id = logged_item_add(TEST_LOGGED_ITEM, *clients)
+    food_item_id, logged_item_id, user_id = logged_item_add(*clients)
 
     # Get that same logged item and check that it matches the sent data
     logged_item_get(clients, food_item_id, logged_item_id, user_id)
@@ -245,7 +244,7 @@ def test_logged_item_delete(
     database: Database,
 ):
     # Adds food item, user and logged item corresponding to those two
-    food_item_id, logged_item_id, user_id = logged_item_add(TEST_LOGGED_ITEM, *clients)
+    food_item_id, logged_item_id, user_id = logged_item_add(*clients)
 
     # Get the logged item
     logged_item_get(clients, food_item_id, logged_item_id, user_id)
