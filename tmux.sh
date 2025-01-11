@@ -13,7 +13,7 @@ tmux split-window -v -l "33%"
 tmux send-keys -t "$SESSION_NAME" ". venv/bin/activate" C-m
 # Run database in bottom-right pane
 tmux split-window -h
-tmux send-keys -t "$SESSION_NAME" "podman-compose -f compose-mongo.yaml up" C-m
+tmux send-keys -t "$SESSION_NAME" "podman-compose -f compose.yaml up" C-m
 # Let's also run combined API here
 tmux split-window -v -l "50%"
 tmux send-keys -t "$SESSION_NAME" ". venv/bin/activate && python api.py" C-m
