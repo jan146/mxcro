@@ -1,5 +1,5 @@
 # Misc
-Chart.lock
+Chart.lock*
 *.tgz
 
 # Tmux setup is nicer with FE repo as subdirectory
