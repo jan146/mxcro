@@ -115,7 +115,7 @@ def food_item(path: QueryPath):
         response, http_status = jsonify({"error": result[0]}), result[1]
     food_item_req_count.labels('GET', '/api/v1/food_item/<string:query>', http_status).inc()
     food_item_req_latency.labels('GET', '/api/v1/food_item/<string:query>').observe(time.time() - time_start)
-    return response
+    return response, http_status
 
 @app.get(
     "/api/v1/food_item/health/live",
