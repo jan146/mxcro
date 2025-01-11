@@ -41,6 +41,8 @@ python api.py
 
 ## Environment setup
 
+Configuration is managed through environment variables.
+
 Required variables:
 - FLASK_DEBUG (set to "false" to disable Flask's debug mode, e.g. `False`)
 - FLASK_HOST (set host that Flask server should listen on, e.g. `0.0.0.0`)
@@ -51,7 +53,7 @@ Required variables:
 - MONGO_DB_NAME (name of database in MongoDB instance, e.g. `mxcro`)
 - MONGO_DB_TEST (name of database for testing in MongoDB instance, e.g. `mxcro-text`)
 - MONGO_USERNAME (set to MongoDB, e.g. `user`)
-- SERVERLESS_NAMESPACE_URL (the url of the namespace with required serverless functions, e.g. `https://faas-fra1-afec6ce7.doserverless.co/api/v1/namespaces/fn-1fe3ffab-d547-44e2-8b38-2158e175bae3`, see section "Serverless")
+- SERVERLESS_NAMESPACE_URL (the url of the namespace with required serverless functions, e.g. `https://faas-fra1-13b1c273.doserverless.co/api/v1/namespaces/fn-5fd4fbe1-16f6-7fdc-7238-6528c09a8ec4`, see section "Serverless")
 - BACKEND_URL (the url that microservices will use to access each other's APIs, e.g. `http://localhost:5000`)
 
 Required variables (secrets):
