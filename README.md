@@ -14,8 +14,14 @@ The goal is to help the user make better decisions for maintaining a healthy and
 
 The application consists of three microservices:
 - food_item
+  - Manages food item entities
+  - Communicates with external API ([Calorie Ninjas](https://calorieninjas.com/api))
 - logged_item
+  - Manages users' invidividually logged items/meals.
+  - Acts as a sort of "bridge entity" between food_item and user_info
 - user_info
+  - Manages users' personal information
+  - Uses serverless functions to calculate a person's daily RDA (reccomended dietary allowance)
 
 # How to run (local)
 
