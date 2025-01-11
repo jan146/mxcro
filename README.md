@@ -89,6 +89,10 @@ helm dependency build k8s/helm-mxcro-shared
 # Install mxcro-shared chart
 helm install mxcro-shared k8s/helm-mxcro-shared
 
-# Add the k8s ojbects for logged_item microservice (analogous for other microservices)
-helm install mxcro-logged-item logged_item/helm-mxcro-logged-item # Optionally add -f logged_item/helm-mxcro-logged-item/values.production.yaml
+# Add the k8s ojbects for food_item microservice
+helm install mxcro-food-item food_item/helm-mxcro-food-item        # Optionally add -f food_item/helm-mxcro-food-item/values.production.yaml
+# Add the k8s ojbects for logged_item microservice
+helm install mxcro-logged-item logged_item/helm-mxcro-logged-item  # Optionally add -f logged_item/helm-mxcro-logged-item/values.production.yaml
+# Add the k8s ojbects for user_info microservice
+helm install mxcro-user-info user_info/helm-mxcro-user-info        # Optionally add -f user_info/helm-mxcro-user-info/values.production.yaml
 ```
