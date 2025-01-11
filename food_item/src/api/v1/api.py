@@ -11,6 +11,9 @@ from pydantic import BaseModel, Field
 from flask_openapi3.openapi import OpenAPI
 from flask_openapi3.models.info import Info
 from flask_openapi3.models.tag import Tag
+from prometheus_client import make_wsgi_app, Counter, Histogram
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+import time
 
 load_dotenv()
 connect(
@@ -24,6 +27,9 @@ connect(
 info: Info = Info(title="Food item microservice API", version="1.0.0")
 app: OpenAPI = OpenAPI(__name__, info=info, doc_prefix="/food_item/openapi")
 CORS(app)
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+    "/food_item/metrics": make_wsgi_app()
+})
 
 TAG_QUERY: Tag = Tag(name="Query", description="Return nutrition facts about the given food")
 TAG_HEALTH: Tag = Tag(name="Health", description="Health checking probes")
@@ -79,6 +85,16 @@ class ReadinessResponseAPI(BaseModel):
 def home():
     return jsonify({"message": "Hello, this is the root endpoint of food_item"}), 200
 
+food_item_req_count: Counter = Counter(
+    "food_item_req_count",
+    "Microservice food_item Request Count",
+    ["method", "endpoint", "http_status"],
+)
+food_item_req_latency: Histogram = Histogram(
+    "food_item_req_latency",
+    "Microservice food_item Request Latency",
+    ["method", "endpoint"],
+)
 @app.get(
     "/api/v1/food_item/<string:query>",
     tags=[TAG_QUERY],
@@ -90,10 +106,16 @@ def home():
     }
 )
 def food_item(path: QueryPath):
+    time_start: float = time.time()
     result: FoodItem | tuple[str, int] = get_nutrition_facts(path.query)
+    response, http_status = jsonify({}), 0
     if isinstance(result, FoodItem):
-        return jsonify({"food_item": FoodItemConverter.to_dict(result)}), 200
-    return jsonify({"error": result[0]}), result[1]
+        response, http_status = jsonify({"food_item": FoodItemConverter.to_dict(result)}), 200
+    else:
+        response, http_status = jsonify({"error": result[0]}), result[1]
+    food_item_req_count.labels('GET', '/api/v1/food_item/<string:query>', http_status).inc()
+    food_item_req_latency.labels('GET', '/api/v1/food_item/<string:query>').observe(time.time() - time_start)
+    return response
 
 @app.get(
     "/api/v1/food_item/health/live",
