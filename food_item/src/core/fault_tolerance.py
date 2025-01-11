@@ -32,7 +32,7 @@ def update_old_open_cb():
 def update_half_open_cb(cb: CircuitBreaker, success: bool):
     # Update state of half open circuit breaker according to success of related operation
     cb.reload()
-    if cb.state == CircuitBreakerState.HALF_OPEN:
+    if cb.state in [CircuitBreakerState.OPEN, CircuitBreakerState.HALF_OPEN]:
         new_state: CircuitBreakerState = CircuitBreakerState.CLOSED if success else CircuitBreakerState.OPEN
         cb.update(set__state=new_state)
 
