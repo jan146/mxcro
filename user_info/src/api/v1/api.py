@@ -112,6 +112,8 @@ def create_user_info(body: UserInfoPydantic):
         return jsonify({}), 200
     data: dict[str, str] = cast(dict[str, str], body.model_dump())
     try:
+        if "id" in data:
+            del data["id"]
         user: UserInfo = create_user(data)
         return jsonify({"message": "User successfully created", "user_info": UserInfoConverter.to_dict(user)}), 200
     except Exception as e:
