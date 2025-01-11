@@ -17,27 +17,27 @@ def get_logged_item(id: str) -> LoggedItem | None:
     result: list[LoggedItem] = list(LoggedItem.objects(pk=ObjectId(id)))
     return result[0] if result else None
 
-def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) -> LoggedItem | None:
+def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) -> LoggedItem | tuple[str, int]:
     
     # Parse request body
     food_name: str = str(data.get("food_name", "")).strip()
     weight_str: str = str(data.get("weight", "")).strip()
     if not food_name:
-        raise Exception("Food name cannot be empty")
+        return "Food name cannot be empty", 400
     if not weight_str:
-        raise Exception("Weight cannot be empty")
+        return "Weight cannot be empty", 400
     weight: int = 0
     try:
         weight = int(float(weight_str))
     except ValueError:
-        raise Exception("Failed to cast weight to number")
+        return "Failed to cast weight to number", 400
     
     # Fetch food item from API
     response: requests.Response = requests.get(f"{os.environ['BACKEND_URL']}/api/v1/food_item/{food_name}")
     if not response.ok:
-        raise Exception(f"Failed to fetch food item: {response.status_code=}, {response.text=}")
+        return response.text, response.status_code
     if not response.content:
-        return None
+        return f"The queried food \"{data['food_name']}\" is unfortunately not available", 200
     content: dict[str, Any] = json.loads(response.content.decode(RESPONSE_ENCODING))
     food_item_dict: dict[str, Any] = content["food_item"]
     food_item: FoodItem = FoodItemConverter.to_entity(food_item_dict)
@@ -45,9 +45,9 @@ def add_item_to_user(user_id: str, date: datetime.date, data: dict[str, str]) ->
     # Check if user exists
     response = requests.get(f"{os.environ['BACKEND_URL']}/api/v1/user_info/id/{user_id}")
     if response.status_code == 404:
-        raise Exception(f"User with id {user_id} does not exist")
+        return f"User with id {user_id} does not exist", 404
     if not response.ok:
-        raise Exception(f"Failed to check if user exists: {response.status_code=}, {response.text=}")
+        return f"Failed to check if user exists: {response.text=}", response.status_code
     
     # Create arbitrary timestamp on specified date
     timestamp: float = datetime.datetime(date.year, date.month, date.day, 12, 0, 0).timestamp()

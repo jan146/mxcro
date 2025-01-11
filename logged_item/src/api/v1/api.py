@@ -187,12 +187,12 @@ def add_logged_item_to_user(path: ManageUserPath, body: LoggedItemBody):
     if date_str:
         date = datetime.datetime.strptime(date_str, DATE_FORMAT).date()
     try:
-        logged_item: LoggedItem | None = add_item_to_user(path.user_id, date, data)
-        if logged_item is None:
-            return jsonify({"message": f"The queried food \"{data['food_name']}\" is unfortunately not available"}), 200
-        return jsonify({"message": "Successfully logged new item", "logged_item": LoggedItemConverter.to_dict(logged_item)}), 200
+        logged_item: LoggedItem | tuple[str, int] = add_item_to_user(path.user_id, date, data)
+        if isinstance(logged_item, LoggedItem):
+            return jsonify({"message": "Successfully logged new item", "logged_item": LoggedItemConverter.to_dict(logged_item)}), 200
+        return jsonify({"message": logged_item[0]}), logged_item[1]
     except Exception as e:
-        return jsonify({"error": f"Failed to log item: {str(e)}"}), 400
+        return jsonify({"error": f"Failed to log item: {str(e)}"}), 500
 
 @app.delete(
     "/api/v1/logged_item/user/<user_id>",
