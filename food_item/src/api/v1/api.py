@@ -1,5 +1,5 @@
 import os
-from flask import jsonify
+from flask import Response, jsonify
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect, get_connection
@@ -76,6 +76,17 @@ class ReadinessResponseDatabase(BaseModel):
 class ReadinessResponseAPI(BaseModel):
     error: str = Field("Timeout reached when reaching Calorie Ninjas API ...", description="Error message")
 
+REQ_COUNT: Counter = Counter(
+    "food_item_req_count",
+    "Microservice food_item Request Count",
+    ["method", "endpoint", "http_status"],
+)
+REQ_LATENCY: Histogram = Histogram(
+    "food_item_req_latency",
+    "Microservice food_item Request Latency",
+    ["method", "endpoint"],
+)
+
 @app.get(
     "/api/v1/",
     responses={
@@ -85,16 +96,6 @@ class ReadinessResponseAPI(BaseModel):
 def home():
     return jsonify({"message": "Hello, this is the root endpoint of food_item"}), 200
 
-food_item_req_count: Counter = Counter(
-    "food_item_req_count",
-    "Microservice food_item Request Count",
-    ["method", "endpoint", "http_status"],
-)
-food_item_req_latency: Histogram = Histogram(
-    "food_item_req_latency",
-    "Microservice food_item Request Latency",
-    ["method", "endpoint"],
-)
 @app.get(
     "/api/v1/food_item/<string:query>",
     tags=[TAG_QUERY],
@@ -108,14 +109,14 @@ food_item_req_latency: Histogram = Histogram(
 def food_item(path: QueryPath):
     time_start: float = time.time()
     result: FoodItem | tuple[str, int] = get_nutrition_facts(path.query)
-    response, http_status = jsonify({}), 0
+    response: tuple[Response, int] = jsonify({}), 0
     if isinstance(result, FoodItem):
-        response, http_status = jsonify({"food_item": FoodItemConverter.to_dict(result)}), 200
+        response = jsonify({"food_item": FoodItemConverter.to_dict(result)}), 200
     else:
-        response, http_status = jsonify({"error": result[0]}), result[1]
-    food_item_req_count.labels('GET', '/api/v1/food_item/<string:query>', http_status).inc()
-    food_item_req_latency.labels('GET', '/api/v1/food_item/<string:query>').observe(time.time() - time_start)
-    return response, http_status
+        response = jsonify({"error": result[0]}), result[1]
+    REQ_COUNT.labels("GET", "/api/v1/food_item/<string:query>", response[1]).inc()
+    REQ_LATENCY.labels("GET", "/api/v1/food_item/<string:query>").observe(time.time() - time_start)
+    return response
 
 @app.get(
     "/api/v1/food_item/health/live",
