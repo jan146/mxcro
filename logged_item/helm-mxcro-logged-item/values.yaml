@@ -8,4 +8,5 @@ maxUnavailable: 1
 maxSurge: 1
 portNumber: 5000
 serviceType: LoadBalancer
+metricsPath: /logged_item/metrics
 

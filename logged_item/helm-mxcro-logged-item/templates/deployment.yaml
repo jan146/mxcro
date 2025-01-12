@@ -5,6 +5,10 @@ metadata:
   labels:
     app: mxcro
     microservice: logged_item
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: {{ .Values.metricsPath }}
+    prometheus.io/port: "{{ .Values.portNumber }}"
 spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
@@ -21,6 +25,10 @@ spec:
       labels:
         app: mxcro
         microservice: logged_item
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: {{ .Values.metricsPath }}
+        prometheus.io/port: "{{ .Values.portNumber }}"
     spec:
       containers:
       - name: mxcro-logged-item
