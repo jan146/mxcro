@@ -1,6 +1,6 @@
 import os
 from typing import Any, cast
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect, get_connection
@@ -13,6 +13,9 @@ from flask_openapi3.openapi import OpenAPI
 from flask_openapi3.models.info import Info
 from flask_openapi3.models.tag import Tag
 from pydantic import BaseModel, Field
+from prometheus_client import make_wsgi_app, Counter, Histogram
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+import time
 
 load_dotenv()
 connect(
@@ -26,6 +29,9 @@ connect(
 info: Info = Info(title="User info microservice API", version="1.0.0")
 app: OpenAPI = OpenAPI(__name__, info=info, doc_prefix="/user_info/openapi")
 CORS(app)
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+    "/user_info/metrics": make_wsgi_app()
+})
 
 TAG_USER: Tag = Tag(name="User", description="Manage user")
 TAG_RDA: Tag = Tag(name="RDA", description="Daily RDA (recommended dietary allowance)")
@@ -89,6 +95,17 @@ class UserIdPath(BaseModel):
 class UsernamePath(BaseModel):
     username: str = Field(..., description="User's unique username")
 
+REQ_COUNT: Counter = Counter(
+    "user_info_req_count",
+    "Microservice user_info Request Count",
+    ["method", "endpoint", "http_status"],
+)
+REQ_LATENCY: Histogram = Histogram(
+    "user_info_req_latency",
+    "Microservice user_info Request Latency",
+    ["method", "endpoint"],
+)
+
 @app.get(
     "/api/v1/",
     responses={
@@ -110,14 +127,19 @@ def home():
 def create_user_info(body: UserInfoPydantic):
     if request.method.lower() == "options":     # For some reason, the content-type isn't set to application/json for the OPTIONS request
         return jsonify({}), 200
+    time_start: float = time.time()
     data: dict[str, str] = cast(dict[str, str], body.model_dump())
+    response: tuple[Response, int] = jsonify({}), 0
     try:
         if "id" in data:
             del data["id"]
         user: UserInfo = create_user(data)
-        return jsonify({"message": "User successfully created", "user_info": UserInfoConverter.to_dict(user)}), 200
+        response = jsonify({"message": "User successfully created", "user_info": UserInfoConverter.to_dict(user)}), 200
     except Exception as e:
-        return jsonify({"error": f"Failed to create user: {str(e)}"}), 400
+        response = jsonify({"error": f"Failed to create user: {str(e)}"}), 400
+    REQ_COUNT.labels("POST", "/api/v1/user_info/", response[1]).inc()
+    REQ_LATENCY.labels("POST", "/api/v1/user_info/").observe(time.time() - time_start)
+    return response
 
 @app.get(
     "/api/v1/user_info/id/<string:id>",
@@ -129,10 +151,16 @@ def create_user_info(body: UserInfoPydantic):
     },
 )
 def get_user(path: UserIdPath):
+    time_start: float = time.time()
     user_info: UserInfo | None = get_user_info(path.id)
+    response: tuple[Response, int] = jsonify({}), 0
     if user_info is None:
-        return jsonify({"error": "User not found"}), 404
-    return jsonify(UserInfoConverter.to_dict(user_info)), 200
+        response = jsonify({"error": "User not found"}), 404
+    else:
+        response = jsonify(UserInfoConverter.to_dict(user_info)), 200
+    REQ_COUNT.labels("GET", "/api/v1/user_info/id/<string:id>", response[1]).inc()
+    REQ_LATENCY.labels("GET", "/api/v1/user_info/id/<string:id>").observe(time.time() - time_start)
+    return response
 
 @app.delete(
     "/api/v1/user_info/id/<string:id>",
@@ -144,12 +172,18 @@ def get_user(path: UserIdPath):
     },
 )
 def delete_user_info(path: UserIdPath):
+    time_start: float = time.time()
     user_info: UserInfo | None = get_user_info(path.id)
+    response: tuple[Response, int] = jsonify({}), 0
     if user_info is None:
-        return jsonify({"error": "User not found"}), 404
-    user_dict: dict[str, Any] = UserInfoConverter.to_dict(user_info)
-    delete_user(user_info)
-    return jsonify({"message": "User successfully deleted", "user_info": user_dict}), 200
+        response = jsonify({"error": "User not found"}), 404
+    else:
+        user_dict: dict[str, Any] = UserInfoConverter.to_dict(user_info)
+        delete_user(user_info)
+        response = jsonify({"message": "User successfully deleted", "user_info": user_dict}), 200
+    REQ_COUNT.labels("DELETE", "/api/v1/user_info/id/<string:id>", response[1]).inc()
+    REQ_LATENCY.labels("DELETE", "/api/v1/user_info/id/<string:id>").observe(time.time() - time_start)
+    return response
 
 @app.get(
     "/api/v1/user_info/username/<string:username>",
@@ -161,11 +195,16 @@ def delete_user_info(path: UserIdPath):
     },
 )
 def user_info_by_username(path: UsernamePath):
+    time_start: float = time.time()
     user_info: UserInfo | None = get_user_info_by_username(path.username)
+    response: tuple[Response, int] = jsonify({}), 0
     if user_info:
-        return jsonify(UserInfoConverter.to_dict(user_info)), 200
+        response = jsonify(UserInfoConverter.to_dict(user_info)), 200
     else:
-        return jsonify({"error": "User not found"}), 404
+        response = jsonify({"error": "User not found"}), 404
+    REQ_COUNT.labels("GET", "/api/v1/user_info/username/<string:username>", response[1]).inc()
+    REQ_LATENCY.labels("GET", "/api/v1/user_info/username/<string:username>").observe(time.time() - time_start)
+    return response
 
 @app.get(
     "/api/v1/user_info/daily_rda/<string:id>",
@@ -177,11 +216,17 @@ def user_info_by_username(path: UsernamePath):
     },
 )
 def daily_rda_for_user(path: UserIdPath):
+    time_start: float = time.time()
     user_info: UserInfo | None = get_user_info(path.id)
+    response: tuple[Response, int] = jsonify({}), 0
     if user_info is None:
-        return jsonify({"error": "User not found"}), 404
-    daily_rda: dict[str, Any] = get_daily_rda(user_info)
-    return jsonify(daily_rda), 200
+        response = jsonify({"error": "User not found"}), 404
+    else:
+        daily_rda: dict[str, Any] = get_daily_rda(user_info)
+        response = jsonify(daily_rda), 200
+    REQ_COUNT.labels("GET", "/api/v1/user_info/daily_rda/<string:id>", response[1]).inc()
+    REQ_LATENCY.labels("GET", "/api/v1/user_info/daily_rda/<string:id>").observe(time.time() - time_start)
+    return response
 
 @app.get(
     "/api/v1/user_info/health/live",
