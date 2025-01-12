@@ -1,5 +1,5 @@
 import os
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from mongoengine import connect, get_connection
@@ -14,6 +14,8 @@ from flask_openapi3.openapi import OpenAPI
 from flask_openapi3.models.info import Info
 from flask_openapi3.models.tag import Tag
 from pydantic import BaseModel, Field
+from prometheus_client import make_wsgi_app, Counter, Histogram
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 DATE_FORMAT: str = "%d/%m/%Y"
 
@@ -29,6 +31,9 @@ connect(
 info: Info = Info(title="Logged item microservice API", version="1.0.0")
 app: OpenAPI = OpenAPI(__name__, info=info, doc_prefix="/logged_item/openapi")
 CORS(app)
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+    "/logged_item/metrics": make_wsgi_app()
+})
 
 TAG_ITEM: Tag = Tag(name="Logged item", description="Manage logged items")
 TAG_USER: Tag = Tag(name="User", description="Manage logged items for specific user")
@@ -107,6 +112,17 @@ class LoggedItemBody(BaseModel):
     food_name: str = Field("Apple", description="Name of the food")
     weight: float = Field(100.0, description="Weight in grams")
 
+REQ_COUNT: Counter = Counter(
+    "logged_item_req_count",
+    "Microservice logged_item Request Count",
+    ["method", "endpoint", "http_status"],
+)
+REQ_LATENCY: Histogram = Histogram(
+    "logged_item_req_latency",
+    "Microservice logged_item Request Latency",
+    ["method", "endpoint"],
+)
+
 @app.get(
     "/api/v1/",
     responses={
@@ -126,10 +142,16 @@ def home():
     },
 )
 def get_item(path: ManageItemPath):
+    time_start: float = time.time()
     logged_item: LoggedItem | None = get_logged_item(path.id)
+    response: tuple[Response, int] = jsonify({}), 0
     if logged_item is None:
-        return jsonify({"error": "Item not found"}), 404
-    return jsonify({"message": f"Successfully found logged item with id {path.id}", "logged_item": LoggedItemConverter.to_dict(logged_item)}), 200
+        response = jsonify({"error": "Item not found"}), 404
+    else:
+        response = jsonify({"message": f"Successfully found logged item with id {path.id}", "logged_item": LoggedItemConverter.to_dict(logged_item)}), 200
+    REQ_COUNT.labels("GET", "/api/v1/logged_item/<string:id>", response[1]).inc()
+    REQ_LATENCY.labels("GET", "/api/v1/logged_item/<string:id>").observe(time.time() - time_start)
+    return response
 
 @app.delete(
     "/api/v1/logged_item/<string:id>",
@@ -141,11 +163,17 @@ def get_item(path: ManageItemPath):
     },
 )
 def delete_item(path: ManageItemPath):
+    time_start: float = time.time()
     logged_item: LoggedItem | None = get_logged_item(path.id)
+    response: tuple[Response, int] = jsonify({}), 0
     if logged_item is None:
-        return jsonify({"error": "Item not found"}), 404
-    delete_logged_item(path.id)
-    return jsonify({"message": f"Successfully deleted logged item with id {path.id}"}), 200
+        response = jsonify({"error": "Item not found"}), 404
+    else:
+        delete_logged_item(path.id)
+        response = jsonify({"message": f"Successfully deleted logged item with id {path.id}"}), 200
+    REQ_COUNT.labels("DELETE", "/api/v1/logged_item/<string:id>", response[1]).inc()
+    REQ_LATENCY.labels("DELETE", "/api/v1/logged_item/<string:id>").observe(time.time() - time_start)
+    return response
 
 @app.get(
     "/api/v1/logged_item/user/<string:user_id>",
@@ -157,6 +185,7 @@ def delete_item(path: ManageItemPath):
     },
 )
 def get_user_logged_items(path: ManageUserPath):
+    time_start: float = time.time()
     from_date: datetime.date = datetime.date.fromtimestamp(0)
     to_date: datetime.date = datetime.date.fromtimestamp(time.time())
     from_str: str | None = request.args.get("from")
@@ -165,11 +194,15 @@ def get_user_logged_items(path: ManageUserPath):
         from_date = datetime.datetime.strptime(from_str, DATE_FORMAT).date()
     if to_str:
         to_date = datetime.datetime.strptime(to_str, DATE_FORMAT).date()
+    response: tuple[Response, int] = jsonify({}), 0
     try:
         logged_items: list[dict[str, Any]] = get_logged_items(path.user_id, from_date, to_date)
-        return jsonify({"logged_items": logged_items}), 200
+        response = jsonify({"logged_items": logged_items}), 200
     except Exception as e:
-        return jsonify({"error": f"Failed to get logged items: {str(e)}"}), 400
+        response = jsonify({"error": f"Failed to get logged items: {str(e)}"}), 400
+    REQ_COUNT.labels("GET", "/api/v1/logged_item/user/<string:user_id>", response[1]).inc()
+    REQ_LATENCY.labels("GET", "/api/v1/logged_item/user/<string:user_id>").observe(time.time() - time_start)
+    return response
 
 @app.post(
     "/api/v1/logged_item/user/<string:user_id>",
@@ -181,18 +214,23 @@ def get_user_logged_items(path: ManageUserPath):
     },
 )
 def add_logged_item_to_user(path: ManageUserPath, body: LoggedItemBody):
+    time_start: float = time.time()
     data: dict[str, str] = cast(dict[str, str], body.model_dump())
     date_str: str | None = request.args.get("date")
     date: datetime.date = datetime.date.today()
     if date_str:
         date = datetime.datetime.strptime(date_str, DATE_FORMAT).date()
+    response: tuple[Response, int] = jsonify({}), 0
     try:
         logged_item: LoggedItem | tuple[str, int] = add_item_to_user(path.user_id, date, data)
         if isinstance(logged_item, LoggedItem):
             return jsonify({"message": "Successfully logged new item", "logged_item": LoggedItemConverter.to_dict(logged_item)}), 200
-        return jsonify({"message": logged_item[0]}), logged_item[1]
+        response = jsonify({"message": logged_item[0]}), logged_item[1]
     except Exception as e:
-        return jsonify({"error": f"Failed to log item: {str(e)}"}), 500
+        response = jsonify({"error": f"Failed to log item: {str(e)}"}), 500
+    REQ_COUNT.labels("POST", "/api/v1/logged_item/user/<string:user_id>", response[1]).inc()
+    REQ_LATENCY.labels("POST", "/api/v1/logged_item/user/<string:user_id>").observe(time.time() - time_start)
+    return response
 
 @app.delete(
     "/api/v1/logged_item/user/<user_id>",
@@ -204,11 +242,16 @@ def add_logged_item_to_user(path: ManageUserPath, body: LoggedItemBody):
     },
 )
 def delete_logged_item_from_user(path: ManageUserPath):
+    time_start: float = time.time()
+    response: tuple[Response, int] = jsonify({}), 0
     try:
         delete_logged_items_for_user(path.user_id)
+        response = jsonify({"message": f"Successfully deleted logged items for user with id {path.user_id}"}), 200
     except Exception as e:
-        return jsonify({"error": f"Failed to delete user's items: {str(e)}"}), 400
-    return jsonify({"message": f"Successfully deleted logged items for user with id {path.user_id}"}), 200
+        response = jsonify({"error": f"Failed to delete user's items: {str(e)}"}), 400
+    REQ_COUNT.labels("DELETE", "/api/v1/logged_item/user/<user_id>", response[1]).inc()
+    REQ_LATENCY.labels("DELETE", "/api/v1/logged_item/user/<user_id>").observe(time.time() - time_start)
+    return response
 
 @app.get(
     "/api/v1/logged_item/health/live",
